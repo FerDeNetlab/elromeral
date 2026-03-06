@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
-import { LogOut, LayoutDashboard, Users, Kanban, Calendar, ChevronRight, Bell, Menu, X, Briefcase, ClipboardList } from "lucide-react"
+import { LogOut, LayoutDashboard, Users, Kanban, Calendar, ChevronRight, Bell, Menu, X, Briefcase, ClipboardList, Package } from "lucide-react"
 
 interface AdminSidebarProps {
-  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "settings"
+  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "productos" | "settings"
 }
 
 export function AdminSidebar({ currentPage }: AdminSidebarProps) {
@@ -29,6 +29,7 @@ export function AdminSidebar({ currentPage }: AdminSidebarProps) {
     { id: "fechas", label: "Fechas", href: "/admin/fechas-bloqueadas", icon: Calendar },
     { id: "alertas", label: "Alertas", href: "/admin/alertas", icon: Bell },
     { id: "encuestas", label: "Encuestas", href: "/admin/encuestas", icon: ClipboardList },
+    { id: "productos", label: "Productos", href: "/admin/productos", icon: Package },
   ]
 
   return (
@@ -82,8 +83,8 @@ export function AdminSidebar({ currentPage }: AdminSidebarProps) {
                   href={item.href}
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all ${isActive
-                      ? "bg-white text-[#1a1a1a] font-medium"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "bg-white text-[#1a1a1a] font-medium"
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
                     }`}
                 >
                   <Icon className="w-5 h-5" />
