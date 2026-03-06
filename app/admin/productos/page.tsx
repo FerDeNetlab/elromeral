@@ -19,6 +19,7 @@ import {
     DollarSign,
     Users,
     ImageIcon,
+    FileSpreadsheet,
 } from "lucide-react"
 
 interface Category {
@@ -120,6 +121,13 @@ function ProductosContent() {
                         >
                             <Tag className="w-4 h-4" />
                             Categorías
+                        </Link>
+                        <Link
+                            href="/admin/productos/importar"
+                            className="flex items-center gap-2 px-4 py-3 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                        >
+                            <FileSpreadsheet className="w-4 h-4" />
+                            Importar Excel
                         </Link>
                         <Link
                             href="/admin/productos/nuevo"
@@ -239,8 +247,8 @@ function ProductosContent() {
                                         <div className="absolute top-3 left-3">
                                             <span
                                                 className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium backdrop-blur-sm ${product.tipo_precio === "fijo"
-                                                        ? "bg-blue-500/90 text-white"
-                                                        : "bg-purple-500/90 text-white"
+                                                    ? "bg-blue-500/90 text-white"
+                                                    : "bg-purple-500/90 text-white"
                                                     }`}
                                             >
                                                 {product.tipo_precio === "fijo" ? (
