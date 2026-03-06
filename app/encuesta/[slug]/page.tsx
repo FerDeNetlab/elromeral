@@ -333,15 +333,16 @@ export default function EncuestaPublicaPage({
                                     {question.opciones.map((opcion, opIndex) => (
                                         <label
                                             key={opIndex}
+                                            onClick={() => actualizarRespuesta(question.id, opcion)}
                                             className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${respuestas[question.id] === opcion
-                                                    ? "bg-[#4a5043]/5 border-[#4a5043]/30"
-                                                    : "bg-[#f8f7f4] border-[#4a5043]/10 hover:border-[#4a5043]/20"
+                                                ? "bg-[#4a5043]/5 border-[#4a5043]/30"
+                                                : "bg-[#f8f7f4] border-[#4a5043]/10 hover:border-[#4a5043]/20"
                                                 }`}
                                         >
                                             <div
                                                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${respuestas[question.id] === opcion
-                                                        ? "border-[#4a5043] bg-[#4a5043]"
-                                                        : "border-[#4a5043]/30"
+                                                    ? "border-[#4a5043] bg-[#4a5043]"
+                                                    : "border-[#4a5043]/30"
                                                     }`}
                                             >
                                                 {respuestas[question.id] === opcion && (
