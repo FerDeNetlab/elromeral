@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react"
 import { createClient } from "@/lib/supabase/client"
 import Image from "next/image"
 import Link from "next/link"
-import { Loader2, Copy, Users, DollarSign, Calendar } from "lucide-react"
+import { Loader2, Copy, Users, DollarSign, Calendar, Building2 } from "lucide-react"
 
 interface QuoteData {
     id: string
@@ -110,22 +110,28 @@ function CotizacionContent({ slug }: { slug: string }) {
                         </div>
 
                         <div className="divide-y divide-[#4a5043]/10">
-                            {quote.selecciones?.map((sel, i) => (
-                                <div key={i} className="p-5">
-                                    <p className="text-xs font-medium text-[#4a5043]/50 uppercase tracking-wider mb-3">{sel.step_titulo}</p>
-                                    {sel.productos?.map((p, j) => (
-                                        <div key={j} className="flex justify-between items-center py-2">
-                                            <div>
-                                                <p className="text-sm text-[#4a5043]">{p.titulo}</p>
-                                                {p.tipo_precio === "por_invitado" && (
-                                                    <p className="text-[10px] text-[#4a5043]/40">${Number(p.precio).toLocaleString("es-MX")} × {quote.num_invitados} invitados</p>
-                                                )}
-                                            </div>
-                                            <p className="text-sm font-medium text-[#4a5043]">${Number(p.subtotal).toLocaleString("es-MX")}</p>
+                            {quote.selecciones?.map((sel, i) => {
+                                const isRenta = sel.step_titulo === "Renta de Instalaciones"
+                                return (
+                                    <div key={i} className={`p-5 ${isRenta ? "bg-[#4a5043]/[0.02]" : ""}`}>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            {isRenta && <Building2 className="w-3.5 h-3.5 text-[#4a5043]/50" />}
+                                            <p className="text-xs font-medium text-[#4a5043]/50 uppercase tracking-wider">{sel.step_titulo}</p>
                                         </div>
-                                    ))}
-                                </div>
-                            ))}
+                                        {sel.productos?.map((p, j) => (
+                                            <div key={j} className="flex justify-between items-center py-2">
+                                                <div>
+                                                    <p className="text-sm text-[#4a5043]">{p.titulo}</p>
+                                                    {p.tipo_precio === "por_invitado" && (
+                                                        <p className="text-[10px] text-[#4a5043]/40">${Number(p.precio).toLocaleString("es-MX")} × {quote.num_invitados} invitados</p>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm font-medium text-[#4a5043]">${Number(p.subtotal).toLocaleString("es-MX")}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )
+                            })}
                         </div>
 
                         {/* Total */}

@@ -6,8 +6,9 @@ import Image from "next/image"
 import Link from "next/link"
 import {
     Loader2, ChevronRight, ChevronLeft, Check,
-    Users, ImageIcon, Download, Share2, Copy,
+    Users, ImageIcon, Download, Share2, Copy, Building2,
 } from "lucide-react"
+import { PRECIOS_INSTALACIONES } from "@/app/configurador/constants"
 
 interface Product {
     id: string
@@ -41,6 +42,11 @@ interface Selection {
     product_ids: string[]
     productos: Array<{ id: string; titulo: string; precio: number; tipo_precio: string; subtotal: number }>
     omitido: boolean
+}
+
+function calcularRentaInstalaciones(numInvitados: number): number {
+    const rango = PRECIOS_INSTALACIONES.find((r: { min: number; max: number; precio: number }) => numInvitados >= r.min && numInvitados <= r.max)
+    return rango ? rango.precio : PRECIOS_INSTALACIONES[PRECIOS_INSTALACIONES.length - 1].precio
 }
 
 function WizardContent({ slug }: { slug: string }) {
@@ -138,10 +144,13 @@ function WizardContent({ slug }: { slug: string }) {
         })
     }
 
+    const rentaInstalaciones = calcularRentaInstalaciones(numInvitados)
+
     const getTotal = () => {
-        return Object.values(selections).reduce(
+        const totalProductos = Object.values(selections).reduce(
             (sum, sel) => sum + sel.productos.reduce((s, p) => s + p.subtotal, 0), 0
         )
+        return rentaInstalaciones + totalProductos
     }
 
     const canProceed = () => {
@@ -172,7 +181,25 @@ function WizardContent({ slug }: { slug: string }) {
         setGuardando(true)
 
         const quotSlug = `cot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
-        const seleccionesArray = Object.values(selections).filter((s) => !s.omitido && s.productos.length > 0)
+        const seleccionesProductos = Object.values(selections).filter((s) => !s.omitido && s.productos.length > 0)
+
+        // Inyectar renta de instalaciones como primera selección
+        const rangoTexto = PRECIOS_INSTALACIONES.find((r) => numInvitados >= r.min && numInvitados <= r.max)
+        const seleccionRenta = {
+            step_id: "renta-instalaciones",
+            step_titulo: "Renta de Instalaciones",
+            product_ids: ["renta-instalaciones"],
+            productos: [{
+                id: "renta-instalaciones",
+                titulo: `Renta de instalaciones (${rangoTexto ? `${rangoTexto.min}–${rangoTexto.max}` : numInvitados} invitados)`,
+                precio: rentaInstalaciones,
+                tipo_precio: "fijo",
+                subtotal: rentaInstalaciones,
+            }],
+            omitido: false,
+        }
+
+        const seleccionesArray = [seleccionRenta, ...seleccionesProductos]
 
         const { error } = await supabase.from("custom_quotes").insert({
             slug: quotSlug,
@@ -353,6 +380,19 @@ function WizardContent({ slug }: { slug: string }) {
                             <p className="text-xs text-[#4a5043]/50 mb-6">{nombre} · {numInvitados} invitados · {tipoEvento}</p>
 
                             <div className="space-y-4 mb-6">
+                                {/* Renta de Instalaciones (siempre incluida) */}
+                                <div className="border border-[#4a5043]/10 rounded-xl p-4 bg-[#4a5043]/[0.02]">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Building2 className="w-3.5 h-3.5 text-[#4a5043]/50" />
+                                        <p className="text-xs font-medium text-[#4a5043]">Renta de Instalaciones</p>
+                                    </div>
+                                    <div className="flex justify-between text-xs py-1">
+                                        <span className="text-[#4a5043]/70">Renta según {numInvitados} invitados</span>
+                                        <span className="font-medium text-[#4a5043]">${rentaInstalaciones.toLocaleString("es-MX")}</span>
+                                    </div>
+                                </div>
+
+                                {/* Selecciones de productos */}
                                 {Object.values(selections).filter((s) => !s.omitido && s.productos.length > 0).map((sel) => (
                                     <div key={sel.step_id} className="border border-[#4a5043]/10 rounded-xl p-4">
                                         <p className="text-xs font-medium text-[#4a5043] mb-2">{sel.step_titulo}</p>
