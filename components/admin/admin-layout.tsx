@@ -6,7 +6,7 @@ import { AuthGuard } from "./auth-guard"
 
 interface AdminLayoutProps {
   children: React.ReactNode
-  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "productos" | "settings"
+  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "productos" | "personalizacion" | "settings"
 }
 
 export function AdminLayout({ children, currentPage }: AdminLayoutProps) {
