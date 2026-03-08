@@ -340,16 +340,39 @@ function RespuestasContent({ surveyId }: { surveyId: string }) {
                                                     const answer = response.respuestas.find(
                                                         (a) => a.question_id === question.id
                                                     )
+                                                    const selectedOptions = answer?.respuesta?.split(", ") || []
                                                     return (
                                                         <div key={question.id} className="bg-neutral-50 rounded-xl p-3">
                                                             <p className="text-xs text-neutral-500 mb-1">
                                                                 {question.pregunta}
                                                             </p>
-                                                            <p className="text-sm font-medium text-neutral-800">
-                                                                {answer?.respuesta || (
-                                                                    <span className="text-neutral-400 italic">Sin respuesta</span>
-                                                                )}
-                                                            </p>
+                                                            {question.tipo === "cerrada" ? (
+                                                                <div className="space-y-1 mt-1.5">
+                                                                    {question.opciones.map((opcion) => {
+                                                                        const isSelected = selectedOptions.includes(opcion)
+                                                                        return (
+                                                                            <div key={opcion} className="flex items-center gap-2">
+                                                                                <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-green-500" : "bg-neutral-200"}`}>
+                                                                                    {isSelected && (
+                                                                                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                                                        </svg>
+                                                                                    )}
+                                                                                </div>
+                                                                                <span className={`text-sm ${isSelected ? "font-medium text-neutral-800" : "text-neutral-400"}`}>
+                                                                                    {opcion}
+                                                                                </span>
+                                                                            </div>
+                                                                        )
+                                                                    })}
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-sm font-medium text-neutral-800">
+                                                                    {answer?.respuesta || (
+                                                                        <span className="text-neutral-400 italic">Sin respuesta</span>
+                                                                    )}
+                                                                </p>
+                                                            )}
                                                         </div>
                                                     )
                                                 })}
