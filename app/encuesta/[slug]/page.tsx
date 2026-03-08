@@ -189,7 +189,7 @@ export default function EncuestaPublicaPage({
                     {/* Logo */}
                     <div className="mb-8">
                         <Image
-                            src="/el-romeral-logo.png"
+                            src="/images/el-romeral-logo-nuevo.png"
                             alt="El Romeral"
                             width={120}
                             height={40}
@@ -232,7 +232,7 @@ export default function EncuestaPublicaPage({
                 <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-center">
                     <Link href="/">
                         <Image
-                            src="/el-romeral-logo.png"
+                            src="/images/el-romeral-logo-nuevo.png"
                             alt="El Romeral"
                             width={100}
                             height={35}
@@ -333,12 +333,19 @@ export default function EncuestaPublicaPage({
                                     {question.opciones.map((opcion, opIndex) => (
                                         <label
                                             key={opIndex}
-                                            onClick={() => actualizarRespuesta(question.id, opcion)}
                                             className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${respuestas[question.id] === opcion
                                                 ? "bg-[#4a5043]/5 border-[#4a5043]/30"
                                                 : "bg-[#f8f7f4] border-[#4a5043]/10 hover:border-[#4a5043]/20"
                                                 }`}
                                         >
+                                            <input
+                                                type="radio"
+                                                name={`question-${question.id}`}
+                                                value={opcion}
+                                                checked={respuestas[question.id] === opcion}
+                                                onChange={() => actualizarRespuesta(question.id, opcion)}
+                                                className="sr-only"
+                                            />
                                             <div
                                                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${respuestas[question.id] === opcion
                                                     ? "border-[#4a5043] bg-[#4a5043]"
