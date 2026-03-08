@@ -11,12 +11,8 @@ import {
     Eye,
     Copy,
     ExternalLink,
-    ChevronDown,
-    ChevronUp,
-    User,
     Mail,
     Calendar,
-    ClipboardList,
 } from "lucide-react"
 
 interface Survey {
@@ -49,7 +45,6 @@ function RespuestasContent({ surveyId }: { surveyId: string }) {
     const [questions, setQuestions] = useState<Question[]>([])
     const [responses, setResponses] = useState<Response[]>([])
     const [loading, setLoading] = useState(true)
-    const [expandedResponse, setExpandedResponse] = useState<string | null>(null)
     const [copiedLink, setCopiedLink] = useState(false)
 
     const supabase = createClient()
@@ -100,30 +95,6 @@ function RespuestasContent({ surveyId }: { surveyId: string }) {
         navigator.clipboard.writeText(url)
         setCopiedLink(true)
         setTimeout(() => setCopiedLink(false), 2000)
-    }
-
-    // Calcular estadísticas de preguntas cerradas
-    const getEstadisticasCerradas = (questionId: string, opciones: string[]) => {
-        const conteo: Record<string, number> = {}
-        opciones.forEach((o) => (conteo[o] = 0))
-
-        responses.forEach((r) => {
-            const resp = r.respuestas.find((a) => a.question_id === questionId)
-            if (resp) {
-                // Handle multi-select responses (comma-separated)
-                const selectedOptions = resp.respuesta.split(", ")
-                selectedOptions.forEach((opt) => {
-                    if (conteo[opt] !== undefined) {
-                        conteo[opt]++
-                    }
-                })
-            }
-        })
-
-        const total = responses.filter((r) =>
-            r.respuestas.some((a) => a.question_id === questionId)
-        ).length
-        return { conteo, total }
     }
 
     if (loading) {
@@ -196,194 +167,103 @@ function RespuestasContent({ surveyId }: { surveyId: string }) {
                     </div>
                 </div>
 
-                {/* Métricas */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-white border border-neutral-200 rounded-2xl p-4 lg:p-6">
-                        <p className="text-xs text-neutral-500 mb-1">Total respuestas</p>
-                        <p className="text-2xl lg:text-3xl font-semibold">{responses.length}</p>
-                    </div>
-                    <div className="bg-white border border-neutral-200 rounded-2xl p-4 lg:p-6">
-                        <p className="text-xs text-neutral-500 mb-1">Preguntas</p>
-                        <p className="text-2xl lg:text-3xl font-semibold">{questions.length}</p>
-                    </div>
-                    <div className="bg-white border border-neutral-200 rounded-2xl p-4 lg:p-6 col-span-2 lg:col-span-1">
-                        <p className="text-xs text-neutral-500 mb-1">Última respuesta</p>
-                        <p className="text-sm lg:text-base font-medium">
-                            {responses.length > 0
-                                ? new Date(responses[0].created_at).toLocaleDateString("es-MX", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })
-                                : "Sin respuestas"}
+                {/* Contador */}
+                <div className="bg-white border border-neutral-200 rounded-2xl p-4 lg:p-6 mb-6">
+                    <p className="text-xs text-neutral-500 mb-1">Total respuestas</p>
+                    <p className="text-2xl lg:text-3xl font-semibold">{responses.length}</p>
+                </div>
+
+                {/* Respuestas */}
+                {responses.length === 0 ? (
+                    <div className="bg-white border border-neutral-200 rounded-2xl p-12 text-center">
+                        <Eye className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+                        <p className="text-neutral-500">Aún no hay respuestas</p>
+                        <p className="text-neutral-400 text-sm">
+                            Comparte el enlace de la encuesta para recibir respuestas
                         </p>
                     </div>
-                </div>
-
-                {/* Resumen de preguntas cerradas */}
-                {questions.filter((q) => q.tipo === "cerrada").length > 0 && responses.length > 0 && (
-                    <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-8">
-                        <h2 className="text-base font-medium text-neutral-900 mb-4">
-                            Resumen de preguntas cerradas
-                        </h2>
-                        <div className="space-y-6">
-                            {questions
-                                .filter((q) => q.tipo === "cerrada")
-                                .map((question) => {
-                                    const { conteo, total } = getEstadisticasCerradas(question.id, question.opciones)
-                                    return (
-                                        <div key={question.id}>
-                                            <p className="text-sm font-medium text-neutral-700 mb-3">
-                                                {question.pregunta}
-                                            </p>
-                                            <div className="space-y-2">
-                                                {question.opciones.map((opcion) => {
-                                                    const count = conteo[opcion] || 0
-                                                    const percentage = total > 0 ? Math.round((count / total) * 100) : 0
-                                                    return (
-                                                        <div key={opcion} className="flex items-center gap-3">
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center justify-between mb-1">
-                                                                    <span className="text-xs text-neutral-600">{opcion}</span>
-                                                                    <span className="text-xs text-neutral-400">
-                                                                        {count} ({percentage}%)
-                                                                    </span>
-                                                                </div>
-                                                                <div className="w-full bg-neutral-100 rounded-full h-2">
-                                                                    <div
-                                                                        className="bg-[#1a1a1a] rounded-full h-2 transition-all duration-500"
-                                                                        style={{ width: `${percentage}%` }}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )
+                ) : (
+                    <div className="space-y-4">
+                        {responses.map((response, rIndex) => (
+                            <div key={response.id} className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+                                {/* Encabezado de la respuesta */}
+                                <div className="px-5 py-4 bg-neutral-50 border-b border-neutral-100 flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-full bg-neutral-200 flex items-center justify-center text-sm font-semibold text-neutral-600 flex-shrink-0">
+                                        {response.respondent_name
+                                            ? response.respondent_name.charAt(0).toUpperCase()
+                                            : "?"}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm text-neutral-900 truncate">
+                                            {response.respondent_name || "Anónimo"}
+                                        </p>
+                                        <div className="flex items-center gap-3 text-xs text-neutral-400">
+                                            {response.respondent_email && (
+                                                <span className="flex items-center gap-1 truncate">
+                                                    <Mail className="w-3 h-3" />
+                                                    {response.respondent_email}
+                                                </span>
+                                            )}
+                                            <span className="flex items-center gap-1">
+                                                <Calendar className="w-3 h-3" />
+                                                {new Date(response.created_at).toLocaleDateString("es-MX", {
+                                                    day: "numeric",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
                                                 })}
-                                            </div>
+                                            </span>
                                         </div>
-                                    )
-                                })}
-                        </div>
+                                    </div>
+                                    <span className="text-xs text-neutral-400 font-medium">#{responses.length - rIndex}</span>
+                                </div>
+
+                                {/* Todas las respuestas visibles */}
+                                <div className="p-5 space-y-4">
+                                    {questions.map((question) => {
+                                        const answer = response.respuestas.find(
+                                            (a) => a.question_id === question.id
+                                        )
+                                        const selectedOptions = answer?.respuesta?.split(", ") || []
+                                        return (
+                                            <div key={question.id}>
+                                                <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide mb-1.5">
+                                                    {question.pregunta}
+                                                </p>
+                                                {question.tipo === "cerrada" ? (
+                                                    selectedOptions.length > 0 && selectedOptions[0] !== "" ? (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {selectedOptions.map((opcion, i) => (
+                                                                <span
+                                                                    key={i}
+                                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800"
+                                                                >
+                                                                    <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                    {opcion}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-sm text-neutral-400 italic">Sin respuesta</p>
+                                                    )
+                                                ) : (
+                                                    <p className="text-sm text-neutral-800">
+                                                        {answer?.respuesta || (
+                                                            <span className="text-neutral-400 italic">Sin respuesta</span>
+                                                        )}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
-
-                {/* Lista de respuestas */}
-                <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-                    <div className="p-4 lg:p-6 border-b border-neutral-200 bg-neutral-50">
-                        <h2 className="font-medium text-neutral-900 flex items-center gap-2">
-                            <ClipboardList className="w-5 h-5" />
-                            Respuestas individuales
-                            <span className="text-sm text-neutral-500 font-normal">({responses.length})</span>
-                        </h2>
-                    </div>
-
-                    {responses.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <Eye className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
-                            <p className="text-neutral-500">Aún no hay respuestas</p>
-                            <p className="text-neutral-400 text-sm">
-                                Comparte el enlace de la encuesta para recibir respuestas
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-neutral-100">
-                            {responses.map((response) => (
-                                <div key={response.id}>
-                                    <button
-                                        onClick={() =>
-                                            setExpandedResponse(
-                                                expandedResponse === response.id ? null : response.id
-                                            )
-                                        }
-                                        className="w-full p-4 flex items-center gap-4 hover:bg-neutral-50 transition-colors text-left"
-                                    >
-                                        <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-sm font-medium text-neutral-600 flex-shrink-0">
-                                            {response.respondent_name
-                                                ? response.respondent_name.charAt(0).toUpperCase()
-                                                : "?"}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-sm truncate">
-                                                {response.respondent_name || "Anónimo"}
-                                            </p>
-                                            <div className="flex items-center gap-3 text-xs text-neutral-400">
-                                                {response.respondent_email && (
-                                                    <span className="flex items-center gap-1 truncate">
-                                                        <Mail className="w-3 h-3" />
-                                                        {response.respondent_email}
-                                                    </span>
-                                                )}
-                                                <span className="flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" />
-                                                    {new Date(response.created_at).toLocaleDateString("es-MX", {
-                                                        day: "numeric",
-                                                        month: "short",
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                    })}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        {expandedResponse === response.id ? (
-                                            <ChevronUp className="w-5 h-5 text-neutral-400" />
-                                        ) : (
-                                            <ChevronDown className="w-5 h-5 text-neutral-400" />
-                                        )}
-                                    </button>
-
-                                    {expandedResponse === response.id && (
-                                        <div className="px-4 pb-4 pl-18">
-                                            <div className="ml-14 space-y-3">
-                                                {questions.map((question) => {
-                                                    const answer = response.respuestas.find(
-                                                        (a) => a.question_id === question.id
-                                                    )
-                                                    const selectedOptions = answer?.respuesta?.split(", ") || []
-                                                    return (
-                                                        <div key={question.id} className="bg-neutral-50 rounded-xl p-3">
-                                                            <p className="text-xs text-neutral-500 mb-1">
-                                                                {question.pregunta}
-                                                            </p>
-                                                            {question.tipo === "cerrada" ? (
-                                                                <div className="space-y-1 mt-1.5">
-                                                                    {question.opciones.map((opcion) => {
-                                                                        const isSelected = selectedOptions.includes(opcion)
-                                                                        return (
-                                                                            <div key={opcion} className="flex items-center gap-2">
-                                                                                <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-green-500" : "bg-neutral-200"}`}>
-                                                                                    {isSelected && (
-                                                                                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                                                        </svg>
-                                                                                    )}
-                                                                                </div>
-                                                                                <span className={`text-sm ${isSelected ? "font-medium text-neutral-800" : "text-neutral-400"}`}>
-                                                                                    {opcion}
-                                                                                </span>
-                                                                            </div>
-                                                                        )
-                                                                    })}
-                                                                </div>
-                                                            ) : (
-                                                                <p className="text-sm font-medium text-neutral-800">
-                                                                    {answer?.respuesta || (
-                                                                        <span className="text-neutral-400 italic">Sin respuesta</span>
-                                                                    )}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
             </div>
         </AdminLayout>
     )
