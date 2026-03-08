@@ -40,7 +40,7 @@ export default function EncuestaPublicaPage({
     // Form state
     const [nombre, setNombre] = useState("")
     const [email, setEmail] = useState("")
-    const [respuestas, setRespuestas] = useState<Record<string, string>>({})
+    const [respuestas, setRespuestas] = useState<Record<string, string | string[]>>({})
 
     const supabase = createClient()
 
@@ -85,13 +85,27 @@ export default function EncuestaPublicaPage({
         setRespuestas((prev) => ({ ...prev, [questionId]: value }))
     }
 
+    const toggleOpcionCerrada = (questionId: string, opcion: string) => {
+        setRespuestas((prev) => {
+            const current = (prev[questionId] as string[]) || []
+            const updated = current.includes(opcion)
+                ? current.filter((o) => o !== opcion)
+                : [...current, opcion]
+            return { ...prev, [questionId]: updated }
+        })
+    }
+
     const enviarRespuestas = async () => {
         setError("")
 
         // Validar campos requeridos
-        const preguntasFaltantes = questions.filter(
-            (q) => q.requerida && (!respuestas[q.id] || !respuestas[q.id].trim())
-        )
+        const preguntasFaltantes = questions.filter((q) => {
+            if (!q.requerida) return false
+            const resp = respuestas[q.id]
+            if (!resp) return true
+            if (Array.isArray(resp)) return resp.length === 0
+            return !resp.trim()
+        })
         if (preguntasFaltantes.length > 0) {
             setError("Por favor responde todas las preguntas obligatorias")
             // Scroll to first missing question
@@ -103,10 +117,13 @@ export default function EncuestaPublicaPage({
         setEnviando(true)
 
         const respuestasArray = Object.entries(respuestas)
-            .filter(([_, value]) => value.trim())
+            .filter(([_, value]) => {
+                if (Array.isArray(value)) return value.length > 0
+                return typeof value === "string" && value.trim() !== ""
+            })
             .map(([question_id, respuesta]) => ({
                 question_id,
-                respuesta: respuesta.trim(),
+                respuesta: Array.isArray(respuesta) ? respuesta.join(", ") : respuesta.trim(),
             }))
 
         const { error: dbError } = await supabase.from("survey_responses").insert({
@@ -330,35 +347,41 @@ export default function EncuestaPublicaPage({
                                 />
                             ) : (
                                 <div className="space-y-2 ml-10">
-                                    {question.opciones.map((opcion, opIndex) => (
-                                        <label
-                                            key={opIndex}
-                                            className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${respuestas[question.id] === opcion
-                                                ? "bg-[#4a5043]/5 border-[#4a5043]/30"
-                                                : "bg-[#f8f7f4] border-[#4a5043]/10 hover:border-[#4a5043]/20"
-                                                }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name={`question-${question.id}`}
-                                                value={opcion}
-                                                checked={respuestas[question.id] === opcion}
-                                                onChange={() => actualizarRespuesta(question.id, opcion)}
-                                                className="sr-only"
-                                            />
-                                            <div
-                                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${respuestas[question.id] === opcion
-                                                    ? "border-[#4a5043] bg-[#4a5043]"
-                                                    : "border-[#4a5043]/30"
+                                    <p className="text-xs text-[#4a5043]/40 mb-1">Puedes seleccionar más de una opción</p>
+                                    {question.opciones.map((opcion, opIndex) => {
+                                        const seleccionadas = (respuestas[question.id] as string[]) || []
+                                        const isSelected = seleccionadas.includes(opcion)
+                                        return (
+                                            <label
+                                                key={opIndex}
+                                                className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${isSelected
+                                                    ? "bg-[#4a5043]/5 border-[#4a5043]/30"
+                                                    : "bg-[#f8f7f4] border-[#4a5043]/10 hover:border-[#4a5043]/20"
                                                     }`}
                                             >
-                                                {respuestas[question.id] === opcion && (
-                                                    <div className="w-2 h-2 rounded-full bg-white" />
-                                                )}
-                                            </div>
-                                            <span className="text-sm text-[#4a5043]">{opcion}</span>
-                                        </label>
-                                    ))}
+                                                <input
+                                                    type="checkbox"
+                                                    value={opcion}
+                                                    checked={isSelected}
+                                                    onChange={() => toggleOpcionCerrada(question.id, opcion)}
+                                                    className="sr-only"
+                                                />
+                                                <div
+                                                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${isSelected
+                                                        ? "border-[#4a5043] bg-[#4a5043]"
+                                                        : "border-[#4a5043]/30"
+                                                        }`}
+                                                >
+                                                    {isSelected && (
+                                                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    )}
+                                                </div>
+                                                <span className="text-sm text-[#4a5043]">{opcion}</span>
+                                            </label>
+                                        )
+                                    })}
                                 </div>
                             )}
                         </div>

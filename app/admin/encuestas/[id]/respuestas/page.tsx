@@ -109,12 +109,20 @@ function RespuestasContent({ surveyId }: { surveyId: string }) {
 
         responses.forEach((r) => {
             const resp = r.respuestas.find((a) => a.question_id === questionId)
-            if (resp && conteo[resp.respuesta] !== undefined) {
-                conteo[resp.respuesta]++
+            if (resp) {
+                // Handle multi-select responses (comma-separated)
+                const selectedOptions = resp.respuesta.split(", ")
+                selectedOptions.forEach((opt) => {
+                    if (conteo[opt] !== undefined) {
+                        conteo[opt]++
+                    }
+                })
             }
         })
 
-        const total = Object.values(conteo).reduce((s, c) => s + c, 0)
+        const total = responses.filter((r) =>
+            r.respuestas.some((a) => a.question_id === questionId)
+        ).length
         return { conteo, total }
     }
 
@@ -169,8 +177,8 @@ function RespuestasContent({ surveyId }: { surveyId: string }) {
                             <button
                                 onClick={copiarEnlace}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all ${copiedLink
-                                        ? "bg-green-50 border-green-200 text-green-700"
-                                        : "bg-white border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+                                    ? "bg-green-50 border-green-200 text-green-700"
+                                    : "bg-white border-neutral-200 text-neutral-600 hover:bg-neutral-50"
                                     }`}
                             >
                                 <Copy className="w-3 h-3" />
