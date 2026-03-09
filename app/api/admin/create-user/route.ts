@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
-    const { secretKey } = await request.json()
+    const { secretKey, email, password } = await request.json()
 
     // Verificar clave secreta para evitar acceso no autorizado
     if (!process.env.ADMIN_SETUP_KEY) {
@@ -12,6 +12,14 @@ export async function POST(request: Request) {
 
     if (secretKey !== process.env.ADMIN_SETUP_KEY) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+    }
+
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email y contraseña son requeridos" }, { status: 400 })
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ error: "La contraseña debe tener al menos 8 caracteres" }, { status: 400 })
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -27,9 +35,6 @@ export async function POST(request: Request) {
         persistSession: false,
       },
     })
-
-    const email = "admin@elromeral.com.mx"
-    const password = "ElRomeral2024!"
 
     // Verificar si el usuario ya existe
     const { data: existingUsers } = await supabase.auth.admin.listUsers()
@@ -59,7 +64,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: "Usuario admin creado exitosamente",
       email,
-      tempPassword: password,
       note: "Cambiar la contraseña después del primer login",
     })
   } catch (error) {
