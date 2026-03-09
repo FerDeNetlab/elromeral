@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
 import { createClient } from "@supabase/supabase-js"
+import { sanitizeHtml } from "@/lib/utils"
 
 export async function POST(request: Request) {
-  console.log("[v0] === INICIO send-quote-alerts ===")
-
   try {
-    // Verificar variables de entorno
     if (!process.env.RESEND_API_KEY) {
-      console.error("[v0] RESEND_API_KEY no está configurada")
       return NextResponse.json({ error: "API de email no configurada" }, { status: 500 })
     }
 
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      console.error("[v0] SUPABASE_URL no está configurada")
       return NextResponse.json({ error: "Base de datos no configurada" }, { status: 500 })
     }
 
@@ -24,10 +20,8 @@ export async function POST(request: Request) {
     )
 
     const { quoteName, quoteSlug, quoteTotal, quoteDate, numInvitados } = await request.json()
-    console.log("[v0] Datos recibidos:", { quoteName, quoteSlug, quoteTotal })
 
     if (!quoteName || !quoteSlug) {
-      console.log("[v0] Faltan datos requeridos")
       return NextResponse.json({ error: "Faltan datos requeridos" }, { status: 400 })
     }
 
@@ -35,22 +29,20 @@ export async function POST(request: Request) {
     const { data: alertEmails, error: dbError } = await supabase.from("alert_emails").select("email").eq("activo", true)
 
     if (dbError) {
-      console.error("[v0] Error obteniendo correos de alerta:", dbError)
       return NextResponse.json({ error: "Error obteniendo correos" }, { status: 500 })
     }
-
-    console.log("[v0] Correos de alerta encontrados:", alertEmails?.length || 0)
 
     if (!alertEmails || alertEmails.length === 0) {
       return NextResponse.json({ success: true, message: "No hay correos de alerta configurados" })
     }
 
     const emails = alertEmails.map((e) => e.email)
-    console.log("[v0] Enviando a:", emails)
 
-    // Formatear datos
+    // Sanitizar y formatear datos
+    const safeName = sanitizeHtml(quoteName)
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://elromeral.com.mx"
-    const quoteUrl = `${siteUrl}/cotizacion/${quoteSlug}`
+    const safeSlug = encodeURIComponent(quoteSlug)
+    const quoteUrl = `${siteUrl}/cotizacion/${safeSlug}`
     const formattedTotal = new Intl.NumberFormat("es-MX", {
       style: "currency",
       currency: "MXN",
@@ -58,17 +50,17 @@ export async function POST(request: Request) {
 
     const formattedDate = quoteDate
       ? new Date(quoteDate + "T00:00:00").toLocaleDateString("es-MX", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
       : "Por definir"
 
     const { data, error } = await resend.emails.send({
       from: "El Romeral <noreply@elromeral.com.mx>",
       to: emails,
-      subject: `Nueva Cotización Completa: ${quoteName}`,
+      subject: `Nueva Cotización Completa: ${safeName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -88,7 +80,7 @@ export async function POST(request: Request) {
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Nombres</td>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a1a; font-size: 14px; font-weight: 500; text-align: right;">${quoteName}</td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a1a; font-size: 14px; font-weight: 500; text-align: right;">${safeName}</td>
                   </tr>
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Fecha del evento</td>
@@ -96,7 +88,7 @@ export async function POST(request: Request) {
                   </tr>
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #888; font-size: 13px;">Invitados</td>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a1a; font-size: 14px; text-align: right;">${numInvitados || 0} personas</td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #1a1a1a; font-size: 14px; text-align: right;">${Number(numInvitados) || 0} personas</td>
                   </tr>
                   <tr>
                     <td style="padding: 12px 0; color: #888; font-size: 13px;">Total cotizado</td>
@@ -126,15 +118,11 @@ export async function POST(request: Request) {
     })
 
     if (error) {
-      console.error("[v0] Error de Resend:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    console.log("[v0] Emails enviados exitosamente:", data)
-    console.log("[v0] === FIN send-quote-alerts (éxito) ===")
     return NextResponse.json({ success: true, emailsSent: emails.length, data })
   } catch (error) {
-    console.error("[v0] Error en send-quote-alerts:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

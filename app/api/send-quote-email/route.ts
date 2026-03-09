@@ -1,27 +1,21 @@
 import { Resend } from "resend"
 import { type NextRequest, NextResponse } from "next/server"
+import { sanitizeHtml } from "@/lib/utils"
 
-// CHANGE: Función para validar formato de email
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
 
 export async function POST(request: NextRequest) {
-  console.log("[v0] === INICIO send-quote-email ===")
-
   try {
     const { to, quoteName, quoteSlug, quoteTotal, quoteDate, numInvitados } = await request.json()
-
-    console.log("[v0] Enviando email a cliente:", to)
 
     if (!to || !quoteName || !quoteSlug) {
       return NextResponse.json({ error: "Faltan datos requeridos" }, { status: 400 })
     }
 
-    // CHANGE: Validar formato de email antes de enviar
     if (!isValidEmail(to)) {
-      console.log("[v0] Email inválido, omitiendo envío:", to)
       return NextResponse.json(
         {
           success: false,
@@ -33,14 +27,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.RESEND_API_KEY) {
-      console.error("[v0] RESEND_API_KEY no está configurada")
       return NextResponse.json({ error: "API de email no configurada" }, { status: 500 })
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY)
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://elromeral.com.mx"
-    const quoteUrl = `${siteUrl}/cotizacion/${quoteSlug}`
+    const safeSlug = encodeURIComponent(quoteSlug)
+    const quoteUrl = `${siteUrl}/cotizacion/${safeSlug}`
+    const safeName = sanitizeHtml(quoteName)
     const formattedTotal = new Intl.NumberFormat("es-MX", {
       style: "currency",
       currency: "MXN",
@@ -48,11 +43,11 @@ export async function POST(request: NextRequest) {
 
     const formattedDate = quoteDate
       ? new Date(quoteDate + "T00:00:00").toLocaleDateString("es-MX", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
       : "Por definir"
 
     const { data, error } = await resend.emails.send({
@@ -75,7 +70,7 @@ export async function POST(request: NextRequest) {
               
               <div style="padding: 40px;">
                 <h2 style="margin: 0 0 20px 0; color: #1a1a1a; font-size: 22px; font-weight: 400; text-align: center;">
-                  ¡Hola ${quoteName}!
+                  ¡Hola ${safeName}!
                 </h2>
                 
                 <p style="color: #666666; font-size: 15px; line-height: 1.6; text-align: center; margin-bottom: 30px;">
@@ -91,7 +86,7 @@ export async function POST(request: NextRequest) {
                     </tr>
                     <tr>
                       <td style="padding: 10px 0; color: #888; font-size: 13px;">Invitados</td>
-                      <td style="padding: 10px 0; color: #1a1a1a; font-size: 14px; text-align: right;">${numInvitados || 0} personas</td>
+                      <td style="padding: 10px 0; color: #1a1a1a; font-size: 14px; text-align: right;">${Number(numInvitados) || 0} personas</td>
                     </tr>
                     <tr>
                       <td style="padding: 15px 0 0 0; color: #888; font-size: 13px; border-top: 1px solid #ddd;">Total estimado</td>
@@ -104,7 +99,6 @@ export async function POST(request: NextRequest) {
                   VER MI COTIZACIÓN
                 </a>
                 
-                <!-- CHANGE: Agregando sección de agendar visita -->
                 <div style="background-color: #fff8e6; border: 2px solid #c9a96e; border-radius: 8px; padding: 25px; margin-bottom: 25px; text-align: center;">
                   <h3 style="margin: 0 0 10px 0; color: #1a1a1a; font-size: 16px; font-weight: 600;">
                     ¿Listos para conocer El Romeral?
@@ -140,14 +134,11 @@ export async function POST(request: NextRequest) {
     })
 
     if (error) {
-      console.error("[v0] Error de Resend:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    console.log("[v0] Email enviado exitosamente:", data)
     return NextResponse.json({ success: true, data })
   } catch (error) {
-    console.error("[v0] Error en API de email:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
