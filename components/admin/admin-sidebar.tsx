@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
-import { LogOut, LayoutDashboard, Users, Kanban, Calendar, ChevronRight, Bell, Menu, X, Briefcase, ClipboardList, Package, Wand2 } from "lucide-react"
+import { LogOut, LayoutDashboard, Users, Kanban, Calendar, ChevronRight, Bell, Menu, X, Briefcase, ClipboardList, Package, Wand2, Contact2, FileText } from "lucide-react"
 
 interface AdminSidebarProps {
-  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "productos" | "personalizacion" | "settings"
+  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "productos" | "personalizacion" | "contactos" | "cotizaciones" | "settings"
 }
 
 export function AdminSidebar({ currentPage }: AdminSidebarProps) {
@@ -30,6 +30,8 @@ export function AdminSidebar({ currentPage }: AdminSidebarProps) {
     { id: "alertas", label: "Alertas", href: "/admin/alertas", icon: Bell },
     { id: "encuestas", label: "Encuestas", href: "/admin/encuestas", icon: ClipboardList },
     { id: "productos", label: "Productos", href: "/admin/productos", icon: Package },
+    { id: "contactos", label: "Contactos", href: "/admin/contactos", icon: Contact2 },
+    { id: "cotizaciones", label: "Cotizaciones", href: "/admin/cotizaciones", icon: FileText },
     { id: "personalizacion", label: "Personalización", href: "/admin/personalizacion", icon: Wand2 },
   ]
 
