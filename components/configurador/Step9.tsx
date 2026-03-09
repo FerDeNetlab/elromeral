@@ -5,7 +5,6 @@ import { Music, Sparkles } from "lucide-react"
 import {
   PRECIO_DJ_GRUPO_RESET,
   PRECIO_EQUIPO_SONIDO,
-  PRECIO_ILUMINACION_ARQUITECTONICA,
   PRECIO_LUCES_ROBOTICAS,
   PRECIO_PLANTA_LUZ_GRUPO,
 } from "@/app/configurador/constants"
@@ -36,7 +35,6 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
   ]
 
   const costosDJCena = [
-    { nombre: "Iluminación arquitectónica de jardines", precio: PRECIO_ILUMINACION_ARQUITECTONICA },
     {
       nombre: "Iluminación profesional de pista",
       precio: PRECIO_LUCES_ROBOTICAS,
@@ -75,16 +73,14 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
           {/* OPCIÓN 01 - DJ Profesional */}
           <div
             onClick={() => handleMusicaChange("dj")}
-            className={`cursor-pointer transition-all border-2 p-8 ${
-              musicaSeleccionada === "dj"
+            className={`cursor-pointer transition-all border-2 p-8 ${musicaSeleccionada === "dj"
                 ? "border-foreground bg-foreground text-background"
                 : "border-neutral-200 hover:border-neutral-400"
-            }`}
+              }`}
           >
             <span
-              className={`text-[10px] tracking-widest uppercase block mb-3 ${
-                musicaSeleccionada === "dj" ? "text-background/60" : "text-muted-foreground"
-              }`}
+              className={`text-[10px] tracking-widest uppercase block mb-3 ${musicaSeleccionada === "dj" ? "text-background/60" : "text-muted-foreground"
+                }`}
             >
               Opción 01
             </span>
@@ -139,11 +135,10 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
                           setMostrarDescripcionIluminacion(true)
                         }
                       }}
-                      className={`text-xs px-3 py-1.5 rounded-sm inline-flex items-center gap-1.5 transition-all ${
-                        musicaSeleccionada === "dj"
+                      className={`text-xs px-3 py-1.5 rounded-sm inline-flex items-center gap-1.5 transition-all ${musicaSeleccionada === "dj"
                           ? "bg-background/10 text-background/90 hover:bg-background/20 border border-background/20"
                           : "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 border border-neutral-200"
-                      }`}
+                        }`}
                     >
                       <Sparkles className="w-3 h-3" />
                       Ver descripción
@@ -165,16 +160,14 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
           {/* OPCIÓN 02 - Grupo Musical */}
           <div
             onClick={() => handleMusicaChange("grupo")}
-            className={`cursor-pointer transition-all border-2 p-8 ${
-              musicaSeleccionada === "grupo"
+            className={`cursor-pointer transition-all border-2 p-8 ${musicaSeleccionada === "grupo"
                 ? "border-foreground bg-foreground text-background"
                 : "border-neutral-200 hover:border-neutral-400"
-            }`}
+              }`}
           >
             <span
-              className={`text-[10px] tracking-widest uppercase block mb-3 ${
-                musicaSeleccionada === "grupo" ? "text-background/60" : "text-muted-foreground"
-              }`}
+              className={`text-[10px] tracking-widest uppercase block mb-3 ${musicaSeleccionada === "grupo" ? "text-background/60" : "text-muted-foreground"
+                }`}
             >
               Opción 02
             </span>

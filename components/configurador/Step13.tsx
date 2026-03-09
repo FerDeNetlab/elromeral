@@ -142,7 +142,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
     if (data.tipoMusica === "dj") {
       let total = COSTOS_DJ.grupoReset + COSTOS_DJ.equipoSonido + COSTOS_DJ.cabinaDJ
       if (data.tipoEvento === "cena") {
-        total += COSTOS_DJ.iluminacionArquitectonica + COSTOS_DJ.lucesRoboticas
+        total += COSTOS_DJ.lucesRoboticas
       }
       return total
     } else if (data.tipoMusica === "grupo") {
@@ -404,12 +404,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
 
         if (data.tipoEvento === "cena") {
           items.push(
-            {
-              descripcion: "Iluminación Arquitectónica de Jardines",
-              cantidad: 1,
-              precioUnitario: COSTOS_DJ.iluminacionArquitectonica,
-              total: COSTOS_DJ.iluminacionArquitectonica,
-            },
             {
               descripcion: "8 Luces Robóticas y 4 Par LED DJ Light",
               cantidad: 1,
