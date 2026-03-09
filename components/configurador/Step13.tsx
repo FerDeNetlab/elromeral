@@ -545,41 +545,39 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
   const guardarCotizacion = async () => {
     setGuardando(true)
     setError("")
-    console.log("[v0] Iniciando guardado de cotización...")
 
     try {
       const totalValidado = typeof total === "number" && !isNaN(total) && total > 0 ? total : 0
 
       if (totalValidado === 0) {
-        console.error("[v0] Error: Total calculado es inválido:", total)
         throw new Error("No se pudo calcular el precio total de la cotización. Por favor revisa las selecciones.")
       }
 
-      console.log("[v0] Total validado:", totalValidado)
+
 
       const nuevoSlug = slug || generarSlug()
-      console.log("[v0] Slug a usar:", nuevoSlug)
-      
+
+
       // Verificar si ya existe una cotización con este slug
       let existingQuote = null
       let shouldSendEmails = true
-      
+
       if (slug) {
-        console.log("[v0] Verificando si la cotización ya existe con slug:", slug)
+
         const { data: existing } = await supabase
           .from("quotes")
           .select("email_sent, slug")
           .eq("slug", slug)
           .maybeSingle()
-        
+
         if (existing) {
           existingQuote = existing
           shouldSendEmails = !existing.email_sent
-          console.log("[v0] Cotización existente encontrada. Email ya enviado:", existing.email_sent)
+
         }
       }
       const partidasDetalle = generarPartidasDetalle()
-      console.log("[v0] Partidas generadas, guardando en Supabase...")
+
 
       const quoteData = {
         slug: nuevoSlug,
@@ -603,10 +601,10 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
       }
 
       let dbError = null
-      
+
       if (existingQuote) {
         // Actualizar cotización existente
-        console.log("[v0] Actualizando cotización existente...")
+
         const { error } = await supabase
           .from("quotes")
           .update(quoteData)
@@ -614,7 +612,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
         dbError = error
       } else {
         // Crear nueva cotización
-        console.log("[v0] Creando nueva cotización...")
+
         const { error } = await supabase
           .from("quotes")
           .insert(quoteData)
@@ -622,20 +620,20 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
       }
 
       if (dbError) {
-        console.log("[v0] Error de Supabase:", dbError)
+
         throw dbError
       }
 
-      console.log("[v0] Cotización guardada exitosamente con slug:", nuevoSlug)
+
       setSlug(nuevoSlug)
       setGuardado(true)
 
       // Solo enviar correos si no se han enviado antes
       if (shouldSendEmails) {
-        console.log("[v0] Enviando correos por primera vez...")
-        
+
+
         try {
-          console.log("[v0] Enviando correo automático al cliente...")
+
           await fetch("/api/send-quote-email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -648,7 +646,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
               numInvitados: data.numInvitados || 0,
             }),
           })
-          console.log("[v0] Correo enviado automáticamente al cliente")
+
         } catch (emailError) {
           console.error("[v0] Error enviando correo al cliente:", emailError)
         }
@@ -675,20 +673,18 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
               slug: nuevoSlug,
             }),
           })
-          console.log("[v0] Alerta de cotización completa enviada exitosamente")
+
         } catch (alertError) {
           console.error("[v0] Error enviando alertas:", alertError)
         }
       } else {
-        console.log("[v0] Los correos ya fueron enviados anteriormente para esta cotización. Saltando envío.")
+
       }
     } catch (err) {
-      console.error("[v0] Error al guardar:", err)
       const errorMessage = err instanceof Error ? err.message : "Error desconocido"
-      console.error("[v0] Detalle del error:", errorMessage)
       setError(`Hubo un error al guardar la cotización: ${errorMessage}. Por favor intenta de nuevo.`)
     } finally {
-      console.log("[v0] Ejecutando finally, desactivando loader...")
+
       setGuardando(false)
     }
   }
@@ -748,7 +744,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
   const BotonEditar = ({ paso, label }: { paso: number; label: string }) => (
     <button
       onClick={() => {
-        console.log("[v0] Editando paso:", paso, label)
+
         if (onGoToStep) {
           onGoToStep(paso)
         }
@@ -761,28 +757,11 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
     </button>
   )
 
-  useEffect(() => {
-    console.log("[v0] Step13 renderizado con data:", {
-      numInvitados: data.numInvitados,
-      tipoComida: data.tipoComida,
-      incluyeVinosLicores: data.incluyeVinosLicores,
-      mesasSeleccionadas: data.mesasSeleccionadas,
-      incluyeMesaNovios: data.incluyeMesaNovios,
-      arreglosFlorales: data.arreglosFlorales,
-      tipoToldo: data.tipoToldo,
-      tipoSuperficie: data.tipoSuperficie,
-      tipoMusica: data.tipoMusica,
-      tipoPista: data.tipoPista,
-      incluyeCapilla: data.incluyeCapilla,
-      extrasSeleccionados: data.extrasSeleccionados,
-      extrasCount: data.extrasSeleccionados?.length || 0,
-    })
-  }, [data])
+
 
   useEffect(() => {
     // Solo ejecutar si no se ha guardado aún y no se está guardando
     if (!guardado && !guardando) {
-      console.log("[v0] Step13 montado, ejecutando guardado automático...")
       guardarCotizacion()
     }
   }, []) // Array vacío para ejecutar solo al montar
@@ -1150,7 +1129,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
                   <div>
                     <p className="text-neutral-800">Vinos y Licores</p>
                     <p className="text-xs text-neutral-500">
-                      {data.barraDeVinos ? `${data.numInvitados} personas` : "No incluido"}
+                      {data.incluyeVinosLicores ? `${data.numInvitados} personas` : "No incluido"}
                     </p>
                   </div>
                 </div>
@@ -1186,7 +1165,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
                   <div>
                     <p className="text-neutral-800">Mesa de Novios</p>
                     <p className="text-xs text-neutral-500">
-                      {data.mesaNovios ? "Con tarima y decoración" : "No incluida"}
+                      {data.incluyeMesaNovios ? "Con tarima y decoración" : "No incluida"}
                     </p>
                   </div>
                 </div>
@@ -1266,7 +1245,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
                     <p className="text-xs text-neutral-500">
                       {data.tipoMusica === "dj"
                         ? "DJ y Equipo de Sonido"
-                        : data.tipoMusica === "planta"
+                        : data.tipoMusica === "grupo"
                           ? "Planta de Luz"
                           : "No incluido"}
                     </p>
@@ -1309,7 +1288,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
                   <Church className="w-5 h-5 text-neutral-400" />
                   <div>
                     <p className="text-neutral-800">Capilla Cristo del Romeral</p>
-                    <p className="text-xs text-neutral-500">{data.capilla ? "Capilla consagrada" : "No incluida"}</p>
+                    <p className="text-xs text-neutral-500">{data.incluyeCapilla ? "Capilla consagrada" : "No incluida"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -1340,8 +1319,8 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
               {/* Total */}
               <div className="flex justify-between items-center p-8 bg-neutral-900 text-white">
                 <div>
-            <p className="text-xs tracking-[0.2em] text-neutral-400 uppercase mb-1">Su Celebración</p>
-            <p className="text-sm text-neutral-300">Inversión total antes de IVA</p>
+                  <p className="text-xs tracking-[0.2em] text-neutral-400 uppercase mb-1">Su Celebración</p>
+                  <p className="text-sm text-neutral-300">Inversión total antes de IVA</p>
                 </div>
                 <span className="font-serif text-3xl md:text-4xl">
                   ${total.toLocaleString("es-MX")} <span className="text-lg">MXN</span>
@@ -1373,12 +1352,12 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
           <div className="border border-neutral-200 bg-neutral-50 p-8 space-y-6">
             <div className="flex items-center justify-center gap-3 text-neutral-800">
               <Check className="w-5 h-5" />
-            <h4 className="font-serif text-lg">Su experiencia está diseñada</h4>
-          </div>
-          
-          <p className="text-neutral-600 text-center text-sm max-w-lg mx-auto">
-            Guarden este enlace para revisar cada detalle cuando lo necesiten y compartirlo con quienes los acompañarán en este proceso.
-          </p>
+              <h4 className="font-serif text-lg">Su experiencia está diseñada</h4>
+            </div>
+
+            <p className="text-neutral-600 text-center text-sm max-w-lg mx-auto">
+              Guarden este enlace para revisar cada detalle cuando lo necesiten y compartirlo con quienes los acompañarán en este proceso.
+            </p>
 
             <div className="flex items-center gap-3 bg-white p-4 border border-neutral-200 max-w-xl mx-auto">
               <LinkIcon className="w-4 h-4 text-neutral-400 flex-shrink-0" />
@@ -1487,37 +1466,37 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
           {/* ============================================================================ */}
 
           <div className="text-center space-y-6 border border-neutral-200 bg-white p-8 md:p-12">
-              {/* Copy introductorio */}
-              <p className="text-sm text-neutral-600 max-w-lg mx-auto leading-relaxed">
-                ¿Tienen dudas sobre su experiencia o quisieran información adicional?
-              </p>
+            {/* Copy introductorio */}
+            <p className="text-sm text-neutral-600 max-w-lg mx-auto leading-relaxed">
+              ¿Tienen dudas sobre su experiencia o quisieran información adicional?
+            </p>
 
-              {/* Botón Agendar Videollamada */}
-              <Button
-                onClick={agendarVideollamada}
-                className="w-full sm:w-auto px-10 py-5 text-sm tracking-[0.2em] uppercase rounded-none transition-all duration-300 border-2 border-neutral-900 bg-transparent text-neutral-900 hover:bg-neutral-900 hover:text-white cursor-pointer"
-              >
-                <Calendar className="w-5 h-5 mr-3" />
-                Agendar Videollamada
-              </Button>
+            {/* Botón Agendar Videollamada */}
+            <Button
+              onClick={agendarVideollamada}
+              className="w-full sm:w-auto px-10 py-5 text-sm tracking-[0.2em] uppercase rounded-none transition-all duration-300 border-2 border-neutral-900 bg-transparent text-neutral-900 hover:bg-neutral-900 hover:text-white cursor-pointer"
+            >
+              <Calendar className="w-5 h-5 mr-3" />
+              Agendar Videollamada
+            </Button>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-neutral-200" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-4 text-neutral-500 tracking-wider">o</span>
-                </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neutral-200" />
               </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-4 text-neutral-500 tracking-wider">o</span>
+              </div>
+            </div>
 
-              {/* Botón Agendar Visita */}
-              <Button
-                onClick={agendarCita}
-                className="w-full sm:w-auto px-12 py-6 text-sm tracking-[0.2em] uppercase rounded-none transition-all duration-300 bg-neutral-900 hover:bg-neutral-800 text-white cursor-pointer"
-              >
-                <Calendar className="w-5 h-5 mr-3" />
-                Agendar Visita Presencial
-              </Button>
+            {/* Botón Agendar Visita */}
+            <Button
+              onClick={agendarCita}
+              className="w-full sm:w-auto px-12 py-6 text-sm tracking-[0.2em] uppercase rounded-none transition-all duration-300 bg-neutral-900 hover:bg-neutral-800 text-white cursor-pointer"
+            >
+              <Calendar className="w-5 h-5 mr-3" />
+              Agendar Visita Presencial
+            </Button>
 
             {/* Texto fijo debajo de los botones */}
             <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed">
@@ -1526,7 +1505,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13P
               Son un momento para conectar y confirmar que podemos hacer de su celebración un día verdaderamente
               inolvidable.
             </p>
-            
+
             {/* Botón para crear nueva experiencia */}
             <div className="pt-6 border-t border-neutral-200">
               <button
