@@ -1250,20 +1250,19 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                 </div>
               </div>
 
-              {/* Extras - Paso 12 */}
+              {/* Extras - Informativo */}
               <div className="flex justify-between items-center p-6 hover:bg-neutral-50 transition-colors">
                 <div className="flex items-center gap-4 flex-1">
                   <Sparkles className="w-5 h-5 text-neutral-400" />
                   <div>
                     <p className="text-neutral-800">Extras y Servicios Adicionales</p>
-                    <p className="text-xs text-neutral-500">{data.extrasSeleccionados?.length} servicios</p>
+                    <p className="text-xs text-neutral-500">Se cotizan el día de su visita</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioExtras > 0 ? `$${precioExtras.toLocaleString("es-MX")}` : "—"}
+                  <span className="font-light text-neutral-400 text-sm italic">
+                    En su demo
                   </span>
-                  <BotonEditar paso={12} label="Extras" />
                 </div>
               </div>
 
