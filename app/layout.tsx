@@ -41,7 +41,8 @@ export const metadata: Metadata = {
     "el romeral",
   ],
   icons: {
-    icon: "/el-romeral-logo.svg",
+    icon: "/icon.svg",
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: "El Romeral - Jardín para Bodas en Guadalajara",
