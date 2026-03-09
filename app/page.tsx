@@ -238,7 +238,7 @@ export default function Home() {
               alt="Capilla El Romeral"
               fill
               quality={80}
-              priority
+              loading="lazy"
               sizes="(max-width: 768px) 100vw, 50vw"
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA=="
@@ -246,9 +246,9 @@ export default function Home() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-10 md:bottom-16 left-6 right-6 md:left-12 md:right-12 text-white">
-                <span className="text-xs tracking-[0.25em] uppercase opacity-60 block mb-3 md:mb-4 font-medium">
-                  Capítulo I
-                </span>
+              <span className="text-xs tracking-[0.25em] uppercase opacity-60 block mb-3 md:mb-4 font-medium">
+                Capítulo I
+              </span>
               <h3 className="text-2xl sm:text-3xl md:text-4xl tracking-[0.1em] md:tracking-[0.15em] uppercase font-light mb-3 md:mb-4">
                 La Promesa
               </h3>
@@ -264,15 +264,15 @@ export default function Home() {
               alt="Pareja de novios bajo la bóveda natural de árboles centenarios"
               fill
               quality={80}
-              priority
+              loading="lazy"
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover group-hover:scale-105 transition-transform duration-[2000ms] ease-out"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-10 md:bottom-16 left-6 right-6 md:left-12 md:right-12 text-white">
-                <span className="text-xs tracking-[0.25em] uppercase opacity-60 block mb-3 md:mb-4 font-medium">
-                  Capítulo II
-                </span>
+              <span className="text-xs tracking-[0.25em] uppercase opacity-60 block mb-3 md:mb-4 font-medium">
+                Capítulo II
+              </span>
               <h3 className="text-2xl sm:text-3xl md:text-4xl tracking-[0.1em] md:tracking-[0.15em] uppercase font-light mb-3 md:mb-4">
                 Bajo El Abrazo De Los Árboles
               </h3>
@@ -292,7 +292,7 @@ export default function Home() {
               alt="Recepción elegante El Romeral"
               fill
               quality={80}
-              priority
+              loading="lazy"
               sizes="100vw"
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA=="
@@ -301,9 +301,9 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/30" />
           <div className="relative z-10 text-center text-white px-6 md:px-8 max-w-4xl mx-auto py-20 md:py-32">
-              <span className="text-xs sm:text-sm tracking-[0.3em] uppercase opacity-60 block mb-6 md:mb-8 font-medium">
-                Capítulo III · Celebración
-              </span>
+            <span className="text-xs sm:text-sm tracking-[0.3em] uppercase opacity-60 block mb-6 md:mb-8 font-medium">
+              Capítulo III · Celebración
+            </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-[0.1em] md:tracking-[0.18em] uppercase font-extralight leading-[1.05] mb-8 md:mb-12">
               Tal como
               <br />
@@ -324,16 +324,16 @@ export default function Home() {
               alt="Jardín iluminado al atardecer con árboles centenarios"
               fill
               quality={80}
-              priority
+              loading="lazy"
               sizes="100vw"
               className="object-cover"
             />
           </div>
           <div className="absolute inset-0 bg-gradient-to-l from-black/90 via-black/60 to-black/30" />
           <div className="relative z-10 px-6 sm:px-10 md:px-16 lg:px-24 xl:px-32 ml-auto max-w-3xl py-20 md:py-32 text-right">
-              <span className="text-xs sm:text-sm tracking-[0.3em] uppercase text-white/60 block mb-6 md:mb-8 font-medium">
-                Capítulo II · Naturaleza
-              </span>
+            <span className="text-xs sm:text-sm tracking-[0.3em] uppercase text-white/60 block mb-6 md:mb-8 font-medium">
+              Capítulo II · Naturaleza
+            </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-[0.08em] md:tracking-[0.12em] uppercase font-extralight leading-[1.1] mb-8 md:mb-12 text-white">
               Armonía
               <br />
@@ -367,9 +367,9 @@ export default function Home() {
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
           <div className="relative z-10 text-center text-white px-6 md:px-8 max-w-4xl mx-auto">
-              <span className="text-xs sm:text-sm tracking-[0.3em] uppercase opacity-60 block mb-6 md:mb-8 font-medium">
-                Capítulo IV · Oasis
-              </span>
+            <span className="text-xs sm:text-sm tracking-[0.3em] uppercase opacity-60 block mb-6 md:mb-8 font-medium">
+              Capítulo IV · Oasis
+            </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-[0.1em] md:tracking-[0.18em] uppercase font-extralight leading-[1.05] mb-8 md:mb-12">
               Oasis
               <br />
