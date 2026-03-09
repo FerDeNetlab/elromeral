@@ -28,6 +28,8 @@ interface ProductRow {
     activo: boolean
     valid: boolean
     errors: string[]
+    action: "crear" | "actualizar"
+    existingId?: string
 }
 
 function ImportarContent() {
@@ -36,7 +38,7 @@ function ImportarContent() {
     const [parsing, setParsing] = useState(false)
     const [importing, setImporting] = useState(false)
     const [imported, setImported] = useState(false)
-    const [importResult, setImportResult] = useState({ success: 0, errors: 0 })
+    const [importResult, setImportResult] = useState({ created: 0, updated: 0, errors: 0 })
     const [error, setError] = useState("")
 
     const supabase = createClient()
@@ -75,25 +77,51 @@ function ImportarContent() {
                 return
             }
 
+            // Buscar columnas (case-insensitive)
+            // strict=true: busca coincidencia exacta primero, luego parcial
+            const getVal = (row: Record<string, unknown>, keys: string[], strict = false) => {
+                if (strict) {
+                    // Primero intentar coincidencia exacta
+                    for (const key of Object.keys(row)) {
+                        if (keys.some((k) => key.toLowerCase().trim() === k.toLowerCase())) {
+                            return String(row[key] ?? "").trim()
+                        }
+                    }
+                }
+                // Fallback: coincidencia parcial
+                for (const key of Object.keys(row)) {
+                    if (keys.some((k) => key.toLowerCase().trim() === k.toLowerCase())) {
+                        return String(row[key] ?? "").trim()
+                    }
+                }
+                // Si no hay match exacto, buscar por inclusión
+                for (const key of Object.keys(row)) {
+                    if (keys.some((k) => key.toLowerCase().includes(k.toLowerCase()))) {
+                        return String(row[key] ?? "").trim()
+                    }
+                }
+                return ""
+            }
+
+            // Cargar productos existentes para detectar duplicados
+            const { data: existingProducts } = await supabase
+                .from("products")
+                .select("id, titulo")
+
+            const existingMap = new Map<string, string>()
+            if (existingProducts) {
+                existingProducts.forEach((p) => existingMap.set(p.titulo.toLowerCase().trim(), p.id))
+            }
+
             const parsed: ProductRow[] = data.map((row) => {
                 const errors: string[] = []
 
-                // Buscar columnas (case-insensitive)
-                const getVal = (keys: string[]) => {
-                    for (const key of Object.keys(row)) {
-                        if (keys.some((k) => key.toLowerCase().includes(k.toLowerCase()))) {
-                            return String(row[key] || "").trim()
-                        }
-                    }
-                    return ""
-                }
-
-                const titulo = getVal(["título", "titulo", "nombre", "title"])
-                const descripcion = getVal(["descripción", "descripcion", "description"])
-                const tipoPrecioRaw = getVal(["tipo", "tipo_precio", "tipo de precio", "price type"])
-                const precioRaw = getVal(["precio", "price", "costo"])
-                const categoria = getVal(["categoría", "categoria", "category"])
-                const activoRaw = getVal(["activo", "active", "estado"])
+                const titulo = getVal(row, ["título", "titulo", "nombre", "title"])
+                const descripcion = getVal(row, ["descripción", "descripcion", "description"])
+                const tipoPrecioRaw = getVal(row, ["tipo de precio", "tipo_precio", "tipo", "price type"])
+                const precioRaw = getVal(row, ["precio", "price", "costo"], true)
+                const categoria = getVal(row, ["categoría", "categoria", "category"])
+                const activoRaw = getVal(row, ["activo", "active", "estado"])
 
                 if (!titulo) errors.push("Falta título")
 
@@ -107,8 +135,9 @@ function ImportarContent() {
                     errors.push(`Tipo de precio "${tipoPrecioRaw}" no válido`)
                 }
 
-                const precio = Number(precioRaw.replace(/[^0-9.]/g, ""))
-                if (isNaN(precio) || precio < 0) {
+                const precioClean = precioRaw.replace(/[^0-9.]/g, "")
+                const precio = precioClean ? Number(precioClean) : NaN
+                if (!precioRaw || isNaN(precio) || precio < 0) {
                     errors.push("Precio inválido")
                 }
 
@@ -119,6 +148,9 @@ function ImportarContent() {
                         ? false
                         : true
 
+                // Detectar si ya existe un producto con el mismo título
+                const existingId = titulo ? existingMap.get(titulo.toLowerCase().trim()) : undefined
+
                 return {
                     titulo,
                     descripcion,
@@ -128,6 +160,8 @@ function ImportarContent() {
                     activo,
                     valid: errors.length === 0,
                     errors,
+                    action: existingId ? "actualizar" as const : "crear" as const,
+                    existingId,
                 }
             })
 
@@ -144,7 +178,8 @@ function ImportarContent() {
         setError("")
 
         const validRows = rows.filter((r) => r.valid)
-        let success = 0
+        let created = 0
+        let updated = 0
         let errors = 0
 
         // Cargar categorías existentes
@@ -189,26 +224,45 @@ function ImportarContent() {
                     }
                 }
 
-                const { error: insertError } = await supabase.from("products").insert({
+                const productData = {
                     titulo: row.titulo,
                     descripcion: row.descripcion || null,
                     tipo_precio: row.tipo_precio,
                     precio: row.precio,
                     category_id: categoryId,
                     activo: row.activo,
-                })
+                }
 
-                if (insertError) {
-                    errors++
+                if (row.action === "actualizar" && row.existingId) {
+                    // Actualizar producto existente
+                    const { error: updateError } = await supabase
+                        .from("products")
+                        .update(productData)
+                        .eq("id", row.existingId)
+
+                    if (updateError) {
+                        errors++
+                    } else {
+                        updated++
+                    }
                 } else {
-                    success++
+                    // Crear producto nuevo
+                    const { error: insertError } = await supabase
+                        .from("products")
+                        .insert(productData)
+
+                    if (insertError) {
+                        errors++
+                    } else {
+                        created++
+                    }
                 }
             } catch {
                 errors++
             }
         }
 
-        setImportResult({ success, errors })
+        setImportResult({ created, updated, errors })
         setImported(true)
         setImporting(false)
     }
@@ -218,11 +272,13 @@ function ImportarContent() {
         setRows([])
         setImported(false)
         setError("")
-        setImportResult({ success: 0, errors: 0 })
+        setImportResult({ created: 0, updated: 0, errors: 0 })
     }
 
     const validCount = rows.filter((r) => r.valid).length
     const invalidCount = rows.filter((r) => !r.valid).length
+    const newCount = rows.filter((r) => r.valid && r.action === "crear").length
+    const updateCount = rows.filter((r) => r.valid && r.action === "actualizar").length
 
     return (
         <AdminLayout currentPage="productos">
@@ -253,10 +309,17 @@ function ImportarContent() {
                             ¡Importación completada!
                         </h2>
                         <p className="text-sm text-neutral-500 mb-6">
-                            Se importaron <span className="font-semibold text-green-600">{importResult.success}</span> productos
+                            {importResult.created > 0 && (
+                                <><span className="font-semibold text-green-600">{importResult.created}</span> productos creados</>
+                            )}
+                            {importResult.created > 0 && importResult.updated > 0 && ", "}
+                            {importResult.updated > 0 && (
+                                <><span className="font-semibold text-blue-600">{importResult.updated}</span> productos actualizados</>
+                            )}
                             {importResult.errors > 0 && (
                                 <>
-                                    {" "}y <span className="font-semibold text-red-500">{importResult.errors}</span> tuvieron errores
+                                    {(importResult.created > 0 || importResult.updated > 0) && " y "}
+                                    <span className="font-semibold text-red-500">{importResult.errors}</span> tuvieron errores
                                 </>
                             )}
                         </p>
@@ -364,14 +427,18 @@ function ImportarContent() {
                         {rows.length > 0 && (
                             <>
                                 {/* Stats */}
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     <div className="bg-white border border-neutral-200 rounded-2xl p-4">
-                                        <p className="text-xs text-neutral-500 mb-1">Total filas</p>
-                                        <p className="text-2xl font-semibold">{rows.length}</p>
+                                        <p className="text-xs text-neutral-500 mb-1">Nuevos</p>
+                                        <p className="text-2xl font-semibold text-green-600">{newCount}</p>
+                                    </div>
+                                    <div className="bg-white border border-neutral-200 rounded-2xl p-4">
+                                        <p className="text-xs text-neutral-500 mb-1">Actualizar</p>
+                                        <p className="text-2xl font-semibold text-blue-600">{updateCount}</p>
                                     </div>
                                     <div className="bg-white border border-neutral-200 rounded-2xl p-4">
                                         <p className="text-xs text-neutral-500 mb-1">Válidos</p>
-                                        <p className="text-2xl font-semibold text-green-600">{validCount}</p>
+                                        <p className="text-2xl font-semibold">{validCount}</p>
                                     </div>
                                     <div className="bg-white border border-neutral-200 rounded-2xl p-4">
                                         <p className="text-xs text-neutral-500 mb-1">Con errores</p>
@@ -448,7 +515,13 @@ function ImportarContent() {
                                                     >
                                                         <td className="px-4 py-3">
                                                             {row.valid ? (
-                                                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${row.action === "actualizar"
+                                                                        ? "bg-blue-100 text-blue-700"
+                                                                        : "bg-green-100 text-green-700"
+                                                                    }`}>
+                                                                    <CheckCircle2 className="w-3 h-3" />
+                                                                    {row.action === "actualizar" ? "Actualizar" : "Nuevo"}
+                                                                </span>
                                                             ) : (
                                                                 <div className="group relative">
                                                                     <AlertCircle className="w-4 h-4 text-red-500" />
@@ -468,8 +541,8 @@ function ImportarContent() {
                                                         <td className="px-4 py-3">
                                                             <span
                                                                 className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${row.tipo_precio === "fijo"
-                                                                        ? "bg-blue-100 text-blue-700"
-                                                                        : "bg-purple-100 text-purple-700"
+                                                                    ? "bg-blue-100 text-blue-700"
+                                                                    : "bg-purple-100 text-purple-700"
                                                                     }`}
                                                             >
                                                                 {row.tipo_precio === "fijo"
@@ -524,6 +597,7 @@ function ImportarContent() {
                                             <>
                                                 <Package className="w-4 h-4" />
                                                 Importar {validCount} productos
+                                                {updateCount > 0 && ` (${updateCount} actualizaciones)`}
                                             </>
                                         )}
                                     </button>
