@@ -136,7 +136,7 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
     const totalEstimado = useMemo(() => {
         const numInvitados = selectedContact?.num_invitados || 1
         return lineas.reduce((sum, l) => {
-            const qty = l.es_por_invitado ? l.cantidad * numInvitados : l.cantidad
+            const qty = l.es_por_invitado ? numInvitados : l.cantidad
             return sum + l.precio_unitario * qty
         }, 0)
     }, [lineas, selectedContact])
@@ -352,7 +352,7 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
                         <div className="divide-y divide-neutral-100">
                             {lineas.map((linea) => {
                                 const numInv = selectedContact?.num_invitados || 1
-                                const qty = linea.es_por_invitado ? linea.cantidad * numInv : linea.cantidad
+                                const qty = linea.es_por_invitado ? numInv : linea.cantidad
                                 const subtotal = linea.precio_unitario * qty
                                 return (
                                     <div key={linea.tempId} className="px-6 py-3">
@@ -360,7 +360,11 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
                                             <input type="text" value={linea.nombre} onChange={(e) => updateLinea(linea.tempId, "nombre", e.target.value)} className="px-2 py-1.5 border border-neutral-200 text-sm focus:border-neutral-400 focus:outline-none" />
                                             <input type="text" value={linea.categoria} onChange={(e) => updateLinea(linea.tempId, "categoria", e.target.value)} className="px-2 py-1.5 border border-neutral-200 text-sm focus:border-neutral-400 focus:outline-none" />
                                             <input type="number" value={linea.precio_unitario} onChange={(e) => updateLinea(linea.tempId, "precio_unitario", parseFloat(e.target.value) || 0)} className="px-2 py-1.5 border border-neutral-200 text-sm text-right focus:border-neutral-400 focus:outline-none" />
-                                            <input type="number" value={linea.cantidad} onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)} min={1} className="px-2 py-1.5 border border-neutral-200 text-sm text-center focus:border-neutral-400 focus:outline-none" />
+                                            {linea.es_por_invitado ? (
+                                                <div className="px-2 py-1.5 border border-neutral-100 bg-neutral-50 text-sm text-center text-neutral-400">{numInv}</div>
+                                            ) : (
+                                                <input type="number" value={linea.cantidad} onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)} min={1} className="px-2 py-1.5 border border-neutral-200 text-sm text-center focus:border-neutral-400 focus:outline-none" />
+                                            )}
                                             <div className="text-sm text-right font-medium px-2">{formatPrice(subtotal)}{linea.es_por_invitado && <span className="block text-[10px] text-neutral-400">×{numInv} inv.</span>}</div>
                                             <input type="text" value={linea.nota} onChange={(e) => updateLinea(linea.tempId, "nota", e.target.value)} placeholder="Nota..." className="px-2 py-1.5 border border-neutral-200 text-sm focus:border-neutral-400 focus:outline-none" />
                                             <button onClick={() => removeLinea(linea.tempId)} className="p-1 text-neutral-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
@@ -372,20 +376,21 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
                                             </div>
                                             <div className="grid grid-cols-3 gap-2">
                                                 <input type="number" value={linea.precio_unitario} onChange={(e) => updateLinea(linea.tempId, "precio_unitario", parseFloat(e.target.value) || 0)} className="px-2 py-1.5 border border-neutral-200 text-sm" />
-                                                <input type="number" value={linea.cantidad} onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)} min={1} className="px-2 py-1.5 border border-neutral-200 text-sm text-center" />
+                                                {linea.es_por_invitado ? (
+                                                    <div className="px-2 py-1.5 border border-neutral-100 bg-neutral-50 text-sm text-center text-neutral-400">{numInv} inv.</div>
+                                                ) : (
+                                                    <input type="number" value={linea.cantidad} onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)} min={1} className="px-2 py-1.5 border border-neutral-200 text-sm text-center" />
+                                                )}
                                                 <div className="text-sm text-right font-medium self-center">{formatPrice(subtotal)}</div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4 mt-1">
-                                            <label className="flex items-center gap-1.5 text-xs text-neutral-500 cursor-pointer">
-                                                <input type="checkbox" checked={linea.es_por_invitado} onChange={(e) => updateLinea(linea.tempId, "es_por_invitado", e.target.checked)} className="w-3.5 h-3.5" />
-                                                Por invitado
-                                            </label>
-                                            <label className="flex items-center gap-1.5 text-xs text-neutral-500 cursor-pointer">
-                                                <input type="checkbox" checked={linea.es_acordado} onChange={(e) => updateLinea(linea.tempId, "es_acordado", e.target.checked)} className="w-3.5 h-3.5" />
-                                                Acordado
-                                            </label>
-                                        </div>
+                                        {linea.es_por_invitado && (
+                                            <div className="mt-1">
+                                                <span className="inline-block px-2 py-0.5 text-[10px] tracking-wider uppercase bg-amber-50 text-amber-600 border border-amber-200 rounded">
+                                                    Precio por invitado · Se multiplica ×{numInv}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             })}

@@ -346,7 +346,7 @@ export default function NuevaCotizacionPage() {
                         <div className="divide-y divide-neutral-100">
                             {lineas.map((linea) => {
                                 const numInv = selectedContact?.num_invitados || 1
-                                const qty = linea.es_por_invitado ? linea.cantidad * numInv : linea.cantidad
+                                const qty = linea.es_por_invitado ? numInv : linea.cantidad
                                 const subtotal = linea.precio_unitario * qty
 
                                 return (
@@ -373,13 +373,19 @@ export default function NuevaCotizacionPage() {
                                                 onChange={(e) => updateLinea(linea.tempId, "precio_unitario", parseFloat(e.target.value) || 0)}
                                                 className="px-2 py-1.5 border border-neutral-200 text-sm text-right focus:border-neutral-400 focus:outline-none"
                                             />
-                                            <input
-                                                type="number"
-                                                value={linea.cantidad}
-                                                onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)}
-                                                min={1}
-                                                className="px-2 py-1.5 border border-neutral-200 text-sm text-center focus:border-neutral-400 focus:outline-none"
-                                            />
+                                            {linea.es_por_invitado ? (
+                                                <div className="px-2 py-1.5 border border-neutral-100 bg-neutral-50 text-sm text-center text-neutral-400">
+                                                    {numInv}
+                                                </div>
+                                            ) : (
+                                                <input
+                                                    type="number"
+                                                    value={linea.cantidad}
+                                                    onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)}
+                                                    min={1}
+                                                    className="px-2 py-1.5 border border-neutral-200 text-sm text-center focus:border-neutral-400 focus:outline-none"
+                                                />
+                                            )}
                                             <div className="text-sm text-right font-medium px-2">
                                                 {formatPrice(subtotal)}
                                                 {linea.es_por_invitado && (
@@ -423,39 +429,32 @@ export default function NuevaCotizacionPage() {
                                                     placeholder="Precio"
                                                     className="px-2 py-1.5 border border-neutral-200 text-sm"
                                                 />
-                                                <input
-                                                    type="number"
-                                                    value={linea.cantidad}
-                                                    onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)}
-                                                    min={1}
-                                                    placeholder="Cant."
-                                                    className="px-2 py-1.5 border border-neutral-200 text-sm text-center"
-                                                />
+                                                {linea.es_por_invitado ? (
+                                                    <div className="px-2 py-1.5 border border-neutral-100 bg-neutral-50 text-sm text-center text-neutral-400">
+                                                        {numInv} inv.
+                                                    </div>
+                                                ) : (
+                                                    <input
+                                                        type="number"
+                                                        value={linea.cantidad}
+                                                        onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)}
+                                                        min={1}
+                                                        placeholder="Cant."
+                                                        className="px-2 py-1.5 border border-neutral-200 text-sm text-center"
+                                                    />
+                                                )}
                                                 <div className="text-sm text-right font-medium self-center">{formatPrice(subtotal)}</div>
                                             </div>
                                         </div>
 
-                                        {/* Per-invitado toggle */}
-                                        <div className="flex items-center gap-4 mt-1 ml-0 md:ml-0">
-                                            <label className="flex items-center gap-1.5 text-xs text-neutral-500 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={linea.es_por_invitado}
-                                                    onChange={(e) => updateLinea(linea.tempId, "es_por_invitado", e.target.checked)}
-                                                    className="w-3.5 h-3.5"
-                                                />
-                                                Por invitado
-                                            </label>
-                                            <label className="flex items-center gap-1.5 text-xs text-neutral-500 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={linea.es_acordado}
-                                                    onChange={(e) => updateLinea(linea.tempId, "es_acordado", e.target.checked)}
-                                                    className="w-3.5 h-3.5"
-                                                />
-                                                Acordado
-                                            </label>
-                                        </div>
+                                        {/* Badges */}
+                                        {linea.es_por_invitado && (
+                                            <div className="mt-1">
+                                                <span className="inline-block px-2 py-0.5 text-[10px] tracking-wider uppercase bg-amber-50 text-amber-600 border border-amber-200 rounded">
+                                                    Precio por invitado · Se multiplica ×{numInv}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             })}
