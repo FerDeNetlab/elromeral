@@ -18,7 +18,6 @@ import Step4 from "@/components/configurador/Step4"
 import Step5 from "@/components/configurador/Step5"
 import Step6 from "@/components/configurador/Step6"
 import Step7 from "@/components/configurador/Step7"
-import Step8 from "@/components/configurador/Step8"
 import Step9 from "@/components/configurador/Step9"
 import Step10 from "@/components/configurador/Step10"
 import Step11 from "@/components/configurador/Step11"
@@ -36,15 +35,14 @@ const stepTitles: Record<number, string> = {
   6: "Su mesa, su momento",
   7: "La belleza en cada detalle",
   8: "Protección y elegancia",
-  9: "El escenario de su celebración",
-  10: "La banda sonora de su historia",
-  11: "Donde todos celebrarán juntos",
-  12: "Un espacio sagrado",
-  13: "Momentos que completan la experiencia",
-  14: "Su experiencia diseñada",
+  9: "La banda sonora de su historia",
+  10: "Donde todos celebrarán juntos",
+  11: "Un espacio sagrado",
+  12: "Momentos que completan la experiencia",
+  13: "Su experiencia diseñada",
 }
 
-const totalSteps = 14
+const totalSteps = 13
 
 const initialData: ConfiguradorData = {
   nombresNovios: "",
@@ -132,8 +130,8 @@ function ConfiguradorContent() {
                 setData((prev) => ({ ...prev, ...configuracionCompleta }))
               }
 
-              const targetStep = stepFromUrl ? Number.parseInt(stepFromUrl, 10) : quote.current_step || 14
-              if (targetStep >= 1 && targetStep <= 14) {
+              const targetStep = stepFromUrl ? Number.parseInt(stepFromUrl, 10) : quote.current_step || 13
+              if (targetStep >= 1 && targetStep <= 13) {
                 setPaso(targetStep)
                 lastSavedStep.current = targetStep
               }
@@ -250,10 +248,10 @@ function ConfiguradorContent() {
     (newData: Partial<ConfiguradorData>) => {
       setData((prev) => ({ ...prev, ...newData }))
       if (editandoDesdeResumen) {
-        setPaso(14)
+        setPaso(13)
         setEditandoDesdeResumen(false)
       } else {
-        setPaso((p) => Math.min(p + 1, 14))
+        setPaso((p) => Math.min(p + 1, 13))
       }
     },
     [editandoDesdeResumen],
@@ -269,7 +267,7 @@ function ConfiguradorContent() {
   }, [])
 
   const volverAlResumen = useCallback(() => {
-    setPaso(14)
+    setPaso(13)
     setEditandoDesdeResumen(false)
   }, [])
 
@@ -307,16 +305,14 @@ function ConfiguradorContent() {
       case 8:
         return <Step7 {...stepProps} />
       case 9:
-        return <Step8 {...stepProps} />
-      case 10:
         return <Step9 {...stepProps} />
-      case 11:
+      case 10:
         return <Step10 {...stepProps} />
-      case 12:
+      case 11:
         return <Step11 {...stepProps} />
-      case 13:
+      case 12:
         return <Step12 {...stepProps} />
-      case 14:
+      case 13:
         return (
           <Step13
             key={`step13-${data.numInvitados}-${data.extrasSeleccionados?.length || 0}-${data.tipoComida}-${data.tipoToldo || ""}-${data.tipoMusica || ""}`}
@@ -464,7 +460,7 @@ function ConfiguradorContent() {
         </div>
 
         <div className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-6 sm:py-8 max-w-5xl mx-auto">
-          {editandoDesdeResumen && paso !== 14 && (
+          {editandoDesdeResumen && paso !== 13 && (
             <button
               onClick={volverAlResumen}
               className="flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.25em] uppercase font-extralight hover:bg-primary/90 transition-all duration-500 group"
@@ -475,7 +471,7 @@ function ConfiguradorContent() {
             </button>
           )}
 
-          {paso > 1 && paso < 14 && !editandoDesdeResumen && (
+          {paso > 1 && paso < 13 && !editandoDesdeResumen && (
             <button
               onClick={goToPrevStep}
               className="flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-500 group"
@@ -490,17 +486,17 @@ function ConfiguradorContent() {
 
         <TotalFlotante data={data} paso={paso} />
 
-        {paso >= 2 && paso <= 13 && (
+        {paso >= 2 && paso <= 12 && (
           <EditorInvitados numInvitados={data.numInvitados} onCambiar={handleCambiarInvitados} />
         )}
       </main>
 
       <div
         className={`fixed bottom-24 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${guardando
-            ? "bg-primary/10 text-primary opacity-100 translate-y-0"
-            : guardadoExitoso
-              ? "bg-green-500/10 text-green-600 opacity-100 translate-y-0"
-              : "opacity-0 translate-y-4 pointer-events-none"
+          ? "bg-primary/10 text-primary opacity-100 translate-y-0"
+          : guardadoExitoso
+            ? "bg-green-500/10 text-green-600 opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4 pointer-events-none"
           }`}
       >
         {guardando ? (

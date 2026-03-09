@@ -18,7 +18,6 @@ import {
   Armchair,
   Flower2,
   Tent,
-  Grid3X3,
   Music,
   Circle,
   Church,
@@ -40,7 +39,6 @@ import {
   PRECIOS_ARREGLOS_FLORALES,
   PRECIO_TOLDO_ALEMAN,
   PRECIO_TOLDO_PERSONALIZADO,
-  PRECIO_ENTARIMADO,
   COSTOS_DJ,
   PRECIO_PLANTA_LUZ,
   PRECIO_PISTA_ILUMINADA,
@@ -140,11 +138,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
     return 0
   }, [data.tipoToldo])
 
-  const precioSuperficie = useMemo(() => {
-    if (data.tipoSuperficie === "entarimado") return PRECIO_ENTARIMADO
-    return 0
-  }, [data.tipoSuperficie])
-
   const precioMusica = useMemo(() => {
     if (data.tipoMusica === "dj") {
       let total = COSTOS_DJ.grupoReset + COSTOS_DJ.equipoSonido + COSTOS_DJ.cabinaDJ
@@ -201,7 +194,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
       precioMesaNovios +
       precioFlores +
       precioToldo +
-      precioSuperficie +
       precioMusica +
       precioPista +
       precioCapilla +
@@ -215,7 +207,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
     precioMesaNovios,
     precioFlores,
     precioToldo,
-    precioSuperficie,
     precioMusica,
     precioPista,
     precioCapilla,
@@ -387,21 +378,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
       })
     }
 
-    // Superficie
-    if (precioSuperficie > 0) {
-      partidas.push({
-        categoria: "Superficie",
-        items: [
-          {
-            descripcion: "Entarimado Pintado Monocromático (16 x 22 m)",
-            cantidad: 1,
-            precioUnitario: precioSuperficie,
-            total: precioSuperficie,
-          },
-        ],
-      })
-    }
-
     // Música
     if (precioMusica > 0) {
       if (data.tipoMusica === "dj") {
@@ -525,7 +501,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
     precioMesaNovios,
     precioFlores,
     precioToldo,
-    precioSuperficie,
     precioMusica,
     precioPista,
     precioCapilla,
@@ -1218,25 +1193,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                 </div>
               </div>
 
-              {/* Superficie - Paso 8 */}
-              <div className="flex justify-between items-center p-6 hover:bg-neutral-50 transition-colors">
-                <div className="flex items-center gap-4 flex-1">
-                  <Grid3X3 className="w-5 h-5 text-neutral-400" />
-                  <div>
-                    <p className="text-neutral-800">Entarimado</p>
-                    <p className="text-xs text-neutral-500">
-                      {data.tipoSuperficie === "entarimado" ? "16 x 22 m" : "No incluido"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioSuperficie > 0 ? `$${precioSuperficie.toLocaleString("es-MX")}` : "—"}
-                  </span>
-                  <BotonEditar paso={9} label="Superficie" />
-                </div>
-              </div>
-
               {/* Música - Paso 9 */}
               <div className="flex justify-between items-center p-6 hover:bg-neutral-50 transition-colors">
                 <div className="flex items-center gap-4 flex-1">
@@ -1256,7 +1212,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   <span className="font-light text-neutral-800">
                     {precioMusica > 0 ? `$${precioMusica.toLocaleString("es-MX")}` : "—"}
                   </span>
-                  <BotonEditar paso={10} label="Música" />
+                  <BotonEditar paso={9} label="Música" />
                 </div>
               </div>
 
@@ -1279,7 +1235,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   <span className="font-light text-neutral-800">
                     {precioPista > 0 ? `$${precioPista.toLocaleString("es-MX")}` : "—"}
                   </span>
-                  <BotonEditar paso={11} label="Pista" />
+                  <BotonEditar paso={10} label="Pista" />
                 </div>
               </div>
 
@@ -1296,7 +1252,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   <span className="font-light text-neutral-800">
                     {precioCapilla > 0 ? `$${precioCapilla.toLocaleString("es-MX")}` : "—"}
                   </span>
-                  <BotonEditar paso={12} label="Capilla" />
+                  <BotonEditar paso={11} label="Capilla" />
                 </div>
               </div>
 
@@ -1313,7 +1269,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   <span className="font-light text-neutral-800">
                     {precioExtras > 0 ? `$${precioExtras.toLocaleString("es-MX")}` : "—"}
                   </span>
-                  <BotonEditar paso={13} label="Extras" />
+                  <BotonEditar paso={12} label="Extras" />
                 </div>
               </div>
 
