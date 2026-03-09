@@ -69,6 +69,7 @@ export interface ArregloFloral {
 export interface StepProps {
   data: ConfiguradorData
   onContinue: (updates: Partial<ConfiguradorData>) => void
+  onChange?: (updates: Partial<ConfiguradorData>) => void
 }
 
 export interface ExtraItem {

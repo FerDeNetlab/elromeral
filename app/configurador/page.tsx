@@ -319,7 +319,7 @@ function ConfiguradorContent() {
       case 14:
         return (
           <Step13
-            key={`step13-${data.numInvitados}-${data.extrasSeleccionados?.length || 0}-${data.tipoComida}-${data.toldo || ""}-${data.tipoMusica || ""}`}
+            key={`step13-${data.numInvitados}-${data.extrasSeleccionados?.length || 0}-${data.tipoComida}-${data.tipoToldo || ""}-${data.tipoMusica || ""}`}
             data={data}
             onGoToStep={(step) => goToStep(step, true)}
             onCambiarInvitados={handleCambiarInvitados}
@@ -496,13 +496,12 @@ function ConfiguradorContent() {
       </main>
 
       <div
-        className={`fixed bottom-24 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-          guardando
+        className={`fixed bottom-24 right-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${guardando
             ? "bg-primary/10 text-primary opacity-100 translate-y-0"
             : guardadoExitoso
               ? "bg-green-500/10 text-green-600 opacity-100 translate-y-0"
               : "opacity-0 translate-y-4 pointer-events-none"
-        }`}
+          }`}
       >
         {guardando ? (
           <>

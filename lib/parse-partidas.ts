@@ -245,12 +245,12 @@ export function parsePartidas(data: any, quote: any): CategoriaDetalle[] {
       total: PRECIO_PISTA_ILUMINADA,
     })
   } else if (tipoPista === "pintada") {
-    let precioPista = PRECIOS_PISTA_PINTADA[50]
-    if (numInvitados <= 50) precioPista = PRECIOS_PISTA_PINTADA[50]
-    else if (numInvitados <= 100) precioPista = PRECIOS_PISTA_PINTADA[100]
-    else if (numInvitados <= 150) precioPista = PRECIOS_PISTA_PINTADA[150]
-    else if (numInvitados <= 250) precioPista = PRECIOS_PISTA_PINTADA[250]
-    else precioPista = PRECIOS_PISTA_PINTADA[400]
+    let precioPista: number = (PRECIOS_PISTA_PINTADA as any)[50]?.precio ?? (PRECIOS_PISTA_PINTADA as any)[50] ?? 0
+    if (numInvitados <= 50) precioPista = (PRECIOS_PISTA_PINTADA as any)[50]?.precio ?? (PRECIOS_PISTA_PINTADA as any)[50] ?? 0
+    else if (numInvitados <= 100) precioPista = (PRECIOS_PISTA_PINTADA as any)[100]?.precio ?? (PRECIOS_PISTA_PINTADA as any)[100] ?? 0
+    else if (numInvitados <= 150) precioPista = (PRECIOS_PISTA_PINTADA as any)[150]?.precio ?? (PRECIOS_PISTA_PINTADA as any)[150] ?? 0
+    else if (numInvitados <= 250) precioPista = (PRECIOS_PISTA_PINTADA as any)[250]?.precio ?? (PRECIOS_PISTA_PINTADA as any)[250] ?? 0
+    else precioPista = (PRECIOS_PISTA_PINTADA as any)[400]?.precio ?? (PRECIOS_PISTA_PINTADA as any)[400] ?? 0
 
     itemsPista.push({
       descripcion: "Pista Pintada a Mano",

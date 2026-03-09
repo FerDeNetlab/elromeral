@@ -55,9 +55,10 @@ interface Step13Props {
   data: ConfiguradorData
   onGoToStep?: (step: number) => void
   onCambiarInvitados?: (nuevoNumero: number) => void
+  onNuevaCotizacion?: () => void
 }
 
-export default function Step13({ data, onGoToStep, onCambiarInvitados }: Step13Props) {
+export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCotizacion }: Step13Props) {
   const [guardando, setGuardando] = useState(false)
   const [guardado, setGuardado] = useState(false)
   const [slug, setSlug] = useState("")

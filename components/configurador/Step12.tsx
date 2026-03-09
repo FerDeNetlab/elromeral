@@ -136,7 +136,7 @@ export default function Step12({ data, onContinue, onChange }: Step12Props) {
 
   return (
     <div className="space-y-6 pb-32">
-      <TotalFlotante data={data} currentStep={12} totalSteps={13} />
+      <TotalFlotante data={data} paso={12} />
 
       <ImageModal
         isOpen={showImageModal}
@@ -201,11 +201,10 @@ export default function Step12({ data, onContinue, onChange }: Step12Props) {
                                   return (
                                     <div
                                       key={item.id}
-                                      className={`flex items-center justify-between p-4 border transition-all ${
-                                        isSelected
+                                      className={`flex items-center justify-between p-4 border transition-all ${isSelected
                                           ? "border-neutral-900 bg-neutral-50"
                                           : "border-neutral-200 hover:border-neutral-400"
-                                      }`}
+                                        }`}
                                     >
                                       <div className="flex items-center gap-2">
                                         <input
@@ -277,11 +276,10 @@ export default function Step12({ data, onContinue, onChange }: Step12Props) {
                                   return (
                                     <div
                                       key={item.id}
-                                      className={`flex items-center justify-between p-4 border transition-all ${
-                                        isSelected
+                                      className={`flex items-center justify-between p-4 border transition-all ${isSelected
                                           ? "border-neutral-900 bg-neutral-50"
                                           : "border-neutral-200 hover:border-neutral-400"
-                                      }`}
+                                        }`}
                                     >
                                       <div className="flex items-center gap-2">
                                         <input
@@ -353,11 +351,10 @@ export default function Step12({ data, onContinue, onChange }: Step12Props) {
                                   return (
                                     <div
                                       key={item.id}
-                                      className={`flex items-center justify-between p-4 border transition-all ${
-                                        isSelected
+                                      className={`flex items-center justify-between p-4 border transition-all ${isSelected
                                           ? "border-neutral-900 bg-neutral-50"
                                           : "border-neutral-200 hover:border-neutral-400"
-                                      }`}
+                                        }`}
                                     >
                                       <div className="flex items-center gap-2">
                                         <input
@@ -418,11 +415,10 @@ export default function Step12({ data, onContinue, onChange }: Step12Props) {
                           return (
                             <div
                               key={item.id}
-                              className={`flex items-center justify-between p-4 border transition-all ${
-                                isSelected
+                              className={`flex items-center justify-between p-4 border transition-all ${isSelected
                                   ? "border-neutral-900 bg-neutral-50"
                                   : "border-neutral-200 hover:border-neutral-400"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center gap-2">
                                 <input

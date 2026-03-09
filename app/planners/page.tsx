@@ -316,14 +316,15 @@ export default function PlannersPage() {
           .from("planners")
           .update({
             ultima_consulta: new Date().toISOString(),
-            consultas_count: supabase.rpc ? undefined : 1, // Incrementar contador si es posible
           })
           .eq("id", plannerId)
 
         // Intentar incrementar el contador de consultas
-        await supabase.rpc("increment_planner_consultas", { planner_id: plannerId }).catch(() => {
+        try {
+          await supabase.rpc("increment_planner_consultas", { planner_id: plannerId })
+        } catch {
           // Si la función RPC no existe, ignorar
-        })
+        }
       } catch (error) {
         console.error("Error registrando consulta:", error)
       }
@@ -385,9 +386,8 @@ export default function PlannersPage() {
                   if (errores.nombre) setErrores({ ...errores, nombre: undefined })
                 }}
                 placeholder="Tu nombre completo"
-                className={`w-full pl-12 pr-4 py-4 border bg-transparent font-light transition-colors ${
-                  errores.nombre ? "border-red-500" : "border-border focus:border-foreground"
-                }`}
+                className={`w-full pl-12 pr-4 py-4 border bg-transparent font-light transition-colors ${errores.nombre ? "border-red-500" : "border-border focus:border-foreground"
+                  }`}
               />
             </div>
             {errores.nombre && (
@@ -413,9 +413,8 @@ export default function PlannersPage() {
                   if (errores.email) setErrores({ ...errores, email: undefined })
                 }}
                 placeholder="correo@ejemplo.com"
-                className={`w-full pl-12 pr-4 py-4 border bg-transparent font-light transition-colors ${
-                  errores.email ? "border-red-500" : "border-border focus:border-foreground"
-                }`}
+                className={`w-full pl-12 pr-4 py-4 border bg-transparent font-light transition-colors ${errores.email ? "border-red-500" : "border-border focus:border-foreground"
+                  }`}
               />
             </div>
             {errores.email && (
@@ -455,9 +454,8 @@ export default function PlannersPage() {
                     if (errores.telefono) setErrores({ ...errores, telefono: undefined })
                   }}
                   placeholder="33 1234 5678"
-                  className={`w-full pl-12 pr-4 py-4 border bg-transparent font-light transition-colors ${
-                    errores.telefono ? "border-red-500" : "border-border focus:border-foreground"
-                  }`}
+                  className={`w-full pl-12 pr-4 py-4 border bg-transparent font-light transition-colors ${errores.telefono ? "border-red-500" : "border-border focus:border-foreground"
+                    }`}
                 />
               </div>
             </div>
@@ -669,11 +667,10 @@ export default function PlannersPage() {
 
             <Link
               href="/configurador"
-              className={`w-full px-8 py-5 border-2 flex items-center justify-center gap-3 transition-all text-center ${
-                terminosAceptados
+              className={`w-full px-8 py-5 border-2 flex items-center justify-center gap-3 transition-all text-center ${terminosAceptados
                   ? "border-foreground bg-foreground text-background hover:bg-background hover:text-foreground"
                   : "border-foreground/20 bg-foreground/5 text-foreground/30 cursor-not-allowed pointer-events-none"
-              }`}
+                }`}
             >
               <Calendar className="w-5 h-5" />
               <span className="text-sm tracking-widest uppercase font-semibold">Agendar Visita</span>
@@ -739,11 +736,10 @@ export default function PlannersPage() {
                   <button
                     key={opcion.personas}
                     onClick={() => setNumeroInvitados(opcion.personas)}
-                    className={`p-4 border transition-all duration-300 text-center ${
-                      numeroInvitados === opcion.personas
+                    className={`p-4 border transition-all duration-300 text-center ${numeroInvitados === opcion.personas
                         ? "border-foreground bg-foreground text-background"
                         : "border-border hover:border-foreground/50"
-                    }`}
+                      }`}
                   >
                     <span className="font-serif text-xl font-light">{opcion.personas}</span>
                   </button>
@@ -766,11 +762,10 @@ export default function PlannersPage() {
                       setResultadoConsulta(null)
                       setFechaConsultada(null)
                     }}
-                    className={`px-8 py-4 border transition-all duration-300 ${
-                      añoSeleccionado === año
+                    className={`px-8 py-4 border transition-all duration-300 ${añoSeleccionado === año
                         ? "border-foreground bg-foreground text-background"
                         : "border-border hover:border-foreground/50"
-                    }`}
+                      }`}
                   >
                     <span className="font-serif text-2xl font-light">{año}</span>
                   </button>
@@ -792,11 +787,10 @@ export default function PlannersPage() {
                       setResultadoConsulta(null)
                       setFechaConsultada(null)
                     }}
-                    className={`px-6 py-4 border transition-all duration-300 ${
-                      mesSeleccionado === mes.numero
+                    className={`px-6 py-4 border transition-all duration-300 ${mesSeleccionado === mes.numero
                         ? "border-foreground bg-foreground text-background"
                         : "border-border hover:border-foreground/50"
-                    }`}
+                      }`}
                   >
                     <span className="font-serif text-lg font-light">{mes.nombre}</span>
                   </button>
@@ -828,11 +822,10 @@ export default function PlannersPage() {
                   <button
                     onClick={consultarDisponibilidad}
                     disabled={!diaSeleccionado}
-                    className={`px-8 py-4 border transition-all duration-300 ${
-                      diaSeleccionado
+                    className={`px-8 py-4 border transition-all duration-300 ${diaSeleccionado
                         ? "border-foreground bg-foreground text-background hover:bg-background hover:text-foreground"
                         : "border-border text-muted-foreground cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     <span className="text-sm tracking-widest uppercase">Consultar</span>
                   </button>
