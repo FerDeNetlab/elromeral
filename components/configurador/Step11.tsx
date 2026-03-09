@@ -67,16 +67,14 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
         {/* Sin Capilla */}
         <div
           onClick={() => handleCapillaChange(false)}
-          className={`cursor-pointer transition-all border-2 p-8 ${
-            capillaSeleccionada === false
+          className={`cursor-pointer transition-all border-2 p-8 ${capillaSeleccionada === false
               ? "border-foreground bg-foreground text-background"
               : "border-neutral-200 hover:border-neutral-400"
-          }`}
+            }`}
         >
           <span
-            className={`text-[10px] tracking-widest uppercase block mb-3 ${
-              capillaSeleccionada === false ? "text-background/60" : "text-muted-foreground"
-            }`}
+            className={`text-[10px] tracking-widest uppercase block mb-3 ${capillaSeleccionada === false ? "text-background/60" : "text-muted-foreground"
+              }`}
           >
             Opción 01
           </span>
@@ -97,11 +95,10 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
         {/* Con Capilla */}
         <div
           onClick={() => handleCapillaChange(true)}
-          className={`cursor-pointer transition-all border-2 p-8 relative ${
-            capillaSeleccionada === true
+          className={`cursor-pointer transition-all border-2 p-8 relative ${capillaSeleccionada === true
               ? "border-foreground bg-foreground text-background"
               : "border-neutral-200 hover:border-neutral-400"
-          }`}
+            }`}
         >
           <button
             onClick={(e) => {
@@ -109,20 +106,18 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
               setShowCapillaGallery(true)
               setCurrentImageIndex(0)
             }}
-            className={`absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-xs border transition-all duration-300 ${
-              capillaSeleccionada === true
+            className={`absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-xs border transition-all duration-300 ${capillaSeleccionada === true
                 ? "border-background/30 text-background hover:bg-background/10"
                 : "border-neutral-300 text-neutral-600 hover:border-neutral-400"
-            }`}
+              }`}
           >
             <Eye className="w-3.5 h-3.5" />
             <span className="tracking-wide">Ver ejemplo</span>
           </button>
 
           <span
-            className={`text-[10px] tracking-widest uppercase block mb-3 ${
-              capillaSeleccionada === true ? "text-background/60" : "text-muted-foreground"
-            }`}
+            className={`text-[10px] tracking-widest uppercase block mb-3 ${capillaSeleccionada === true ? "text-background/60" : "text-muted-foreground"
+              }`}
           >
             Opción 02
           </span>
@@ -138,9 +133,8 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className={`block p-4 mb-6 transition-opacity hover:opacity-80 ${
-              capillaSeleccionada === true ? "bg-background/10" : "bg-neutral-100"
-            }`}
+            className={`block p-4 mb-6 transition-opacity hover:opacity-80 ${capillaSeleccionada === true ? "bg-background/10" : "bg-neutral-100"
+              }`}
           >
             <p className={`text-sm font-medium tracking-wide ${capillaSeleccionada === true ? "text-background" : ""}`}>
               Capilla Consagrada
@@ -168,16 +162,16 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
               <span className="font-medium">Todo fluye en un mismo lugar.</span> Sin traslados, sin prisas, sin estrés logístico. Sus invitados pasan de la emoción de la ceremonia a la celebración del jardín de manera natural, mientras ustedes disfrutan cada momento con la certeza de que todo está bajo control.
             </p>
           </div>
-          
+
           <p className={`text-xs uppercase tracking-wider mb-3 ${capillaSeleccionada === true ? "text-background/60" : "text-neutral-500"}`}>Incluye en la ceremonia</p>
-          
+
           <ul className="space-y-3">
             <li className="flex items-start gap-3 text-sm font-light">
               <span
                 className={`w-1 h-1 rounded-full mt-2 flex-shrink-0 ${capillaSeleccionada === true ? "bg-background/60" : "bg-neutral-400"}`}
               />
               <span className={capillaSeleccionada === true ? "text-background/80" : "text-neutral-600"}>
-                Coordinación profesional en ceremonia religiosa
+                Iluminaciones arquitectónicas dentro y fuera de capilla
               </span>
             </li>
             <li className="flex items-start gap-3 text-sm font-light">
@@ -185,7 +179,7 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
                 className={`w-1 h-1 rounded-full mt-2 flex-shrink-0 ${capillaSeleccionada === true ? "bg-background/60" : "bg-neutral-400"}`}
               />
               <span className={capillaSeleccionada === true ? "text-background/80" : "text-neutral-600"}>
-                Alfombra (roja, azul o ivory) e iluminación
+                Telas cubre reclinatorios
               </span>
             </li>
             <li className="flex items-start gap-3 text-sm font-light">
@@ -193,7 +187,7 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
                 className={`w-1 h-1 rounded-full mt-2 flex-shrink-0 ${capillaSeleccionada === true ? "bg-background/60" : "bg-neutral-400"}`}
               />
               <span className={capillaSeleccionada === true ? "text-background/80" : "text-neutral-600"}>
-                Coro Amadeus con 7 elementos
+                Banca doble para novios y sillón para padre tejido en tule
               </span>
             </li>
             <li className="flex items-start gap-3 text-sm font-light">
@@ -201,17 +195,16 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
                 className={`w-1 h-1 rounded-full mt-2 flex-shrink-0 ${capillaSeleccionada === true ? "bg-background/60" : "bg-neutral-400"}`}
               />
               <span className={capillaSeleccionada === true ? "text-background/80" : "text-neutral-600"}>
-                Floristería completa personalizada
+                Oficiamiento de la ceremonia
               </span>
             </li>
           </ul>
 
           <div
-            className={`mt-6 pt-4 border-t text-[10px] italic ${
-              capillaSeleccionada === true
+            className={`mt-6 pt-4 border-t text-[10px] italic ${capillaSeleccionada === true
                 ? "border-background/20 text-background/60"
                 : "border-neutral-200 text-neutral-500"
-            }`}
+              }`}
           >
             * Las imágenes son ejemplos de referencia de la capilla. La decoración se personalizará según su evento.
           </div>
@@ -221,11 +214,10 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
       <button
         onClick={handleContinuar}
         disabled={capillaSeleccionada === null}
-        className={`w-full mt-16 py-5 border text-xs tracking-widest uppercase transition-all duration-300 ${
-          capillaSeleccionada !== null
+        className={`w-full mt-16 py-5 border text-xs tracking-widest uppercase transition-all duration-300 ${capillaSeleccionada !== null
             ? "border-foreground bg-foreground text-background hover:bg-transparent hover:text-foreground"
             : "border-neutral-300 text-neutral-400 cursor-not-allowed"
-        }`}
+          }`}
       >
         Continuar
       </button>

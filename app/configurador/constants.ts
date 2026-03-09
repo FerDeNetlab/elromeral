@@ -119,7 +119,7 @@ export const PRECIOS_PISTA_PINTADA = [
 ]
 
 // Precio de capilla
-export const PRECIO_CAPILLA = 62600
+export const PRECIO_CAPILLA = 20700
 
 // Extras - Coordinación y Servicios Especiales
 export const EXTRAS_COORDINACION = [
