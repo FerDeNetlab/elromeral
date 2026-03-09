@@ -34,6 +34,7 @@ interface Flow {
     slug: string
     titulo: string
     descripcion: string | null
+    incluir_paso_fijo: boolean
 }
 
 interface Selection {
@@ -83,7 +84,7 @@ function WizardContent({ slug }: { slug: string }) {
             .single()
 
         if (!flowData) { setNotFound(true); setLoading(false); return }
-        setFlow(flowData)
+        setFlow({ ...flowData, incluir_paso_fijo: flowData.incluir_paso_fijo !== false })
 
         const { data: stepsData } = await supabase
             .from("quote_flow_steps")
@@ -109,8 +110,10 @@ function WizardContent({ slug }: { slug: string }) {
         setLoading(false)
     }
 
-    const totalSteps = steps.length + 2 // info + N steps + resumen
-    const isResumen = currentStep === steps.length + 1
+    const incluirPasoFijo = flow?.incluir_paso_fijo !== false
+    const infoSteps = incluirPasoFijo ? 1 : 0
+    const totalSteps = steps.length + infoSteps + 1 // info (optional) + N steps + resumen
+    const isResumen = currentStep === steps.length + infoSteps
     const progress = ((currentStep) / (totalSteps - 1)) * 100
 
     const selectProduct = (step: Step, productId: string) => {
@@ -144,7 +147,7 @@ function WizardContent({ slug }: { slug: string }) {
         })
     }
 
-    const rentaInstalaciones = calcularRentaInstalaciones(numInvitados)
+    const rentaInstalaciones = incluirPasoFijo ? calcularRentaInstalaciones(numInvitados) : 0
 
     const getTotal = () => {
         const totalProductos = Object.values(selections).reduce(
@@ -154,9 +157,11 @@ function WizardContent({ slug }: { slug: string }) {
     }
 
     const canProceed = () => {
-        if (currentStep === 0) return nombre.trim().length > 0 && numInvitados > 0
+        if (incluirPasoFijo && currentStep === 0) return nombre.trim().length > 0 && numInvitados > 0
         if (isResumen) return true
-        const step = steps[currentStep - 1]
+        const stepIndex = currentStep - infoSteps
+        const step = steps[stepIndex]
+        if (!step) return true
         const sel = selections[step.id]
         if (sel?.omitido) return true
         if (!step.requerido && !sel) return true
@@ -164,7 +169,7 @@ function WizardContent({ slug }: { slug: string }) {
     }
 
     const nextStep = () => {
-        if (currentStep === 0) {
+        if (incluirPasoFijo && currentStep === 0) {
             if (!nombre.trim()) { setStep0Error("El nombre es obligatorio"); return }
             if (numInvitados < 1) { setStep0Error("Ingresa el número de invitados"); return }
             setStep0Error("")
@@ -183,31 +188,33 @@ function WizardContent({ slug }: { slug: string }) {
         const quotSlug = `cot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
         const seleccionesProductos = Object.values(selections).filter((s) => !s.omitido && s.productos.length > 0)
 
-        // Inyectar renta de instalaciones como primera selección
-        const rangoTexto = PRECIOS_INSTALACIONES.find((r) => numInvitados >= r.min && numInvitados <= r.max)
-        const seleccionRenta = {
-            step_id: "renta-instalaciones",
-            step_titulo: "Renta de Instalaciones",
-            product_ids: ["renta-instalaciones"],
-            productos: [{
-                id: "renta-instalaciones",
-                titulo: `Renta de instalaciones (${rangoTexto ? `${rangoTexto.min}–${rangoTexto.max}` : numInvitados} invitados)`,
-                precio: rentaInstalaciones,
-                tipo_precio: "fijo",
-                subtotal: rentaInstalaciones,
-            }],
-            omitido: false,
+        // Inyectar renta de instalaciones como primera selección (solo si paso fijo está activo)
+        const seleccionesArray = []
+        if (incluirPasoFijo) {
+            const rangoTexto = PRECIOS_INSTALACIONES.find((r) => numInvitados >= r.min && numInvitados <= r.max)
+            seleccionesArray.push({
+                step_id: "renta-instalaciones",
+                step_titulo: "Renta de Instalaciones",
+                product_ids: ["renta-instalaciones"],
+                productos: [{
+                    id: "renta-instalaciones",
+                    titulo: `Renta de instalaciones (${rangoTexto ? `${rangoTexto.min}–${rangoTexto.max}` : numInvitados} invitados)`,
+                    precio: rentaInstalaciones,
+                    tipo_precio: "fijo",
+                    subtotal: rentaInstalaciones,
+                }],
+                omitido: false,
+            })
         }
-
-        const seleccionesArray = [seleccionRenta, ...seleccionesProductos]
+        seleccionesArray.push(...seleccionesProductos)
 
         const { error } = await supabase.from("custom_quotes").insert({
             slug: quotSlug,
             flow_id: flow.id,
-            nombre_cliente: nombre.trim(),
-            email: email.trim() || null,
-            tipo_evento: tipoEvento,
-            num_invitados: numInvitados,
+            nombre_cliente: incluirPasoFijo ? nombre.trim() : null,
+            email: incluirPasoFijo ? (email.trim() || null) : null,
+            tipo_evento: incluirPasoFijo ? tipoEvento : null,
+            num_invitados: incluirPasoFijo ? numInvitados : null,
             selecciones: seleccionesArray,
             total: getTotal(),
         })
@@ -271,8 +278,8 @@ function WizardContent({ slug }: { slug: string }) {
                         {flow?.descripcion && <p className="text-sm text-[#4a5043]/60">{flow.descripcion}</p>}
                     </div>
 
-                    {/* STEP 0: Info básica */}
-                    {currentStep === 0 && (
+                    {/* STEP 0: Info básica (solo si incluir_paso_fijo) */}
+                    {incluirPasoFijo && currentStep === 0 && (
                         <div className="bg-white rounded-2xl border border-[#4a5043]/10 p-6 lg:p-8 animate-in fade-in-0 duration-300">
                             <h2 className="text-xl text-[#4a5043] mb-6" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Información Básica</h2>
                             <div className="space-y-4">
@@ -304,8 +311,8 @@ function WizardContent({ slug }: { slug: string }) {
                     )}
 
                     {/* DYNAMIC STEPS */}
-                    {currentStep > 0 && !isResumen && (() => {
-                        const step = steps[currentStep - 1]
+                    {currentStep >= infoSteps && !isResumen && (() => {
+                        const step = steps[currentStep - infoSteps]
                         if (!step) return null
                         const sel = selections[step.id]
                         return (
@@ -377,20 +384,22 @@ function WizardContent({ slug }: { slug: string }) {
                     {isResumen && !cotizacionGuardada && (
                         <div className="bg-white rounded-2xl border border-[#4a5043]/10 p-6 lg:p-8 animate-in fade-in-0 duration-300">
                             <h2 className="text-xl text-[#4a5043] mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Resumen de tu Cotización</h2>
-                            <p className="text-xs text-[#4a5043]/50 mb-6">{nombre} · {numInvitados} invitados · {tipoEvento}</p>
+                            <p className="text-xs text-[#4a5043]/50 mb-6">{incluirPasoFijo ? `${nombre} · ${numInvitados} invitados · ${tipoEvento}` : "Revisa tu selección"}</p>
 
                             <div className="space-y-4 mb-6">
-                                {/* Renta de Instalaciones (siempre incluida) */}
-                                <div className="border border-[#4a5043]/10 rounded-xl p-4 bg-[#4a5043]/[0.02]">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Building2 className="w-3.5 h-3.5 text-[#4a5043]/50" />
-                                        <p className="text-xs font-medium text-[#4a5043]">Renta de Instalaciones</p>
+                                {/* Renta de Instalaciones (solo si paso fijo incluido) */}
+                                {incluirPasoFijo && (
+                                    <div className="border border-[#4a5043]/10 rounded-xl p-4 bg-[#4a5043]/[0.02]">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Building2 className="w-3.5 h-3.5 text-[#4a5043]/50" />
+                                            <p className="text-xs font-medium text-[#4a5043]">Renta de Instalaciones</p>
+                                        </div>
+                                        <div className="flex justify-between text-xs py-1">
+                                            <span className="text-[#4a5043]/70">Renta según {numInvitados} invitados</span>
+                                            <span className="font-medium text-[#4a5043]">${rentaInstalaciones.toLocaleString("es-MX")}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between text-xs py-1">
-                                        <span className="text-[#4a5043]/70">Renta según {numInvitados} invitados</span>
-                                        <span className="font-medium text-[#4a5043]">${rentaInstalaciones.toLocaleString("es-MX")}</span>
-                                    </div>
-                                </div>
+                                )}
 
                                 {/* Selecciones de productos */}
                                 {Object.values(selections).filter((s) => !s.omitido && s.productos.length > 0).map((sel) => (

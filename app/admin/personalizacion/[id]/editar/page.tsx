@@ -40,6 +40,7 @@ function EditarFlujoContent({ flowId }: { flowId: string }) {
 
     const [titulo, setTitulo] = useState("")
     const [descripcion, setDescripcion] = useState("")
+    const [incluirPasoFijo, setIncluirPasoFijo] = useState(true)
     const [steps, setSteps] = useState<StepDraft[]>([])
     const [productSearch, setProductSearch] = useState<Record<number, string>>({})
 
@@ -59,6 +60,7 @@ function EditarFlujoContent({ flowId }: { flowId: string }) {
 
         setTitulo(flowRes.data.titulo)
         setDescripcion(flowRes.data.descripcion || "")
+        setIncluirPasoFijo(flowRes.data.incluir_paso_fijo !== false)
         if (productsRes.data) setProducts(productsRes.data)
 
         if (stepsRes.data) {
@@ -91,7 +93,7 @@ function EditarFlujoContent({ flowId }: { flowId: string }) {
 
         setGuardando(true)
 
-        await supabase.from("quote_flows").update({ titulo: titulo.trim(), descripcion: descripcion.trim() || null, updated_at: new Date().toISOString() }).eq("id", flowId)
+        await supabase.from("quote_flows").update({ titulo: titulo.trim(), descripcion: descripcion.trim() || null, incluir_paso_fijo: incluirPasoFijo, updated_at: new Date().toISOString() }).eq("id", flowId)
 
         // Borrar pasos antiguos (cascade borra step_products)
         await supabase.from("quote_flow_steps").delete().eq("flow_id", flowId)
@@ -130,13 +132,22 @@ function EditarFlujoContent({ flowId }: { flowId: string }) {
                         </div>
                     </div>
 
-                    <div className="bg-neutral-50 border border-neutral-200 rounded-2xl p-6 opacity-70">
+                    <div className={`bg-neutral-50 border border-neutral-200 rounded-2xl p-6 transition-opacity ${!incluirPasoFijo ? "opacity-40" : "opacity-70"}`}>
                         <div className="flex items-center gap-3 mb-2">
                             <span className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center text-sm font-medium">1</span>
-                            <h3 className="font-medium text-neutral-900">Información básica</h3>
+                            <h3 className={`font-medium text-neutral-900 ${!incluirPasoFijo ? "line-through" : ""}`}>Información básica</h3>
                             <span className="px-2 py-0.5 text-[10px] bg-neutral-200 text-neutral-600 rounded-full">Paso fijo</span>
+                            <label className="ml-auto flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={incluirPasoFijo}
+                                    onChange={(e) => setIncluirPasoFijo(e.target.checked)}
+                                    className="rounded border-neutral-300"
+                                />
+                                <span className="text-xs text-neutral-500">Incluir</span>
+                            </label>
                         </div>
-                        <p className="text-xs text-neutral-500 ml-11">Nombre, email, invitados, comida/cena (automático)</p>
+                        <p className="text-xs text-neutral-500 ml-11">Nombre, email, invitados, comida/cena {incluirPasoFijo ? "(automático)" : "(desactivado)"}</p>
                     </div>
 
                     {steps.map((step, index) => (
@@ -148,7 +159,7 @@ function EditarFlujoContent({ flowId }: { flowId: string }) {
                                         <GripVertical className="w-3 h-3 text-neutral-300" />
                                         <button onClick={() => moveStep(index, "down")} disabled={index === steps.length - 1} className="p-0.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-30"><ChevronDown className="w-3 h-3" /></button>
                                     </div>
-                                    <span className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center text-sm font-medium">{index + 2}</span>
+                                    <span className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center text-sm font-medium">{incluirPasoFijo ? index + 2 : index + 1}</span>
                                     <input type="text" value={step.titulo} onChange={(e) => updateStep(index, { titulo: e.target.value })} placeholder="Título del paso" className="flex-1 px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5" />
                                     <button onClick={() => removeStep(index)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                                 </div>
