@@ -28,15 +28,11 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
     }
   }
 
-  const cocteleriaPara = Math.ceil(data.numInvitados * 1.5)
-
   const menu3TiemposFeatures = [
     "Más de 100 platillos artesanales con proteínas selectas",
     "Mobiliario completo: mesas con mantelería fina, cristalería de calidad",
     "Equipo de meseros y bartenders dedicados a su evento",
     "Bebidas refrescantes ilimitadas durante toda la celebración",
-    `${cocteleriaPara} cócteles de autor en cuatro sabores que ustedes eligen`,
-    "Mobiliario lounge junto a la alberca para el cóctel de bienvenida",
   ]
 
   const parrilladaFeatures = [
@@ -45,8 +41,6 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
     "Mobiliario completo con cristalería y vajilla elegante",
     "Equipo de meseros y bartenders dedicados a su celebración",
     "Bebidas refrescantes sin límite durante todo el evento",
-    `${cocteleriaPara} cócteles preparados con ingredientes premium`,
-    "Espacios lounge para disfrutar el cóctel junto a la alberca",
   ]
 
   return (
@@ -56,31 +50,28 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
           La comida es uno de los recuerdos más vívidos de cualquier celebración. Un menú de tres tiempos ofrece versatilidad clásica con más de 100 opciones refinadas. La parrillada argentina aporta calidez, autenticidad y el ritual de compartir alrededor del fuego. Ambas experiencias deleitarán a sus invitados.
         </p>
       </div>
-      
+
       <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
         {/* Menú 3 Tiempos */}
         <button
           onClick={() => handleSeleccion("menu3tiempos")}
-          className={`text-left p-6 sm:p-8 md:p-10 border transition-all duration-300 ${
-            seleccion === "menu3tiempos"
+          className={`text-left p-6 sm:p-8 md:p-10 border transition-all duration-300 ${seleccion === "menu3tiempos"
               ? "border-foreground bg-foreground text-background"
               : "border-border hover:border-foreground"
-          }`}
+            }`}
         >
           <div className="space-y-6">
             <div>
               <span
-                className={`text-[10px] tracking-widest uppercase block mb-3 ${
-                  seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
-                }`}
+                className={`text-[10px] tracking-widest uppercase block mb-3 ${seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
+                  }`}
               >
                 Opción 01
               </span>
               <h3 className="font-serif text-2xl md:text-3xl font-light">Menú de 3 Tiempos</h3>
               <p
-                className={`text-sm mt-2 ${
-                  seleccion === "menu3tiempos" ? "text-background/80" : "text-muted-foreground"
-                }`}
+                className={`text-sm mt-2 ${seleccion === "menu3tiempos" ? "text-background/80" : "text-muted-foreground"
+                  }`}
               >
                 Escojan de entre más de 100 opciones de platillos
               </p>
@@ -90,9 +81,8 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
               {menu3TiemposFeatures.map((feature, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <Check
-                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                      seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
-                    }`}
+                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
+                      }`}
                   />
                   <span className="text-sm font-light leading-relaxed">{feature}</span>
                 </div>
@@ -100,15 +90,13 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
             </div>
 
             <div
-              className={`pt-6 border-t space-y-2 ${
-                seleccion === "menu3tiempos" ? "border-background/20" : "border-border"
-              }`}
+              className={`pt-6 border-t space-y-2 ${seleccion === "menu3tiempos" ? "border-background/20" : "border-border"
+                }`}
             >
               <div className="flex justify-between items-baseline">
                 <span
-                  className={`text-xs tracking-wider ${
-                    seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
-                  }`}
+                  className={`text-xs tracking-wider ${seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
+                    }`}
                 >
                   Por persona
                 </span>
@@ -116,9 +104,8 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
               </div>
               <div className="flex justify-between items-baseline">
                 <span
-                  className={`text-xs tracking-wider ${
-                    seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
-                  }`}
+                  className={`text-xs tracking-wider ${seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
+                    }`}
                 >
                   Total para {data.numInvitados} invitados
                 </span>
@@ -133,26 +120,23 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
         {/* Parrillada */}
         <button
           onClick={() => handleSeleccion("parrillada")}
-          className={`text-left p-8 md:p-10 border transition-all duration-300 ${
-            seleccion === "parrillada"
+          className={`text-left p-8 md:p-10 border transition-all duration-300 ${seleccion === "parrillada"
               ? "border-foreground bg-foreground text-background"
               : "border-border hover:border-foreground"
-          }`}
+            }`}
         >
           <div className="space-y-6">
             <div>
               <span
-                className={`text-[10px] tracking-widest uppercase block mb-3 ${
-                  seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
-                }`}
+                className={`text-[10px] tracking-widest uppercase block mb-3 ${seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
+                  }`}
               >
                 Opción 02
               </span>
               <h3 className="font-serif text-2xl md:text-3xl font-light">Parrillada de Cortes</h3>
               <p
-                className={`text-sm mt-2 ${
-                  seleccion === "parrillada" ? "text-background/80" : "text-muted-foreground"
-                }`}
+                className={`text-sm mt-2 ${seleccion === "parrillada" ? "text-background/80" : "text-muted-foreground"
+                  }`}
               >
                 4 cortes premium + guarniciones
               </p>
@@ -162,9 +146,8 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
               {parrilladaFeatures.map((feature, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <Check
-                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                      seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
-                    }`}
+                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
+                      }`}
                   />
                   <span className="text-sm font-light leading-relaxed">{feature}</span>
                 </div>
@@ -172,15 +155,13 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
             </div>
 
             <div
-              className={`pt-6 border-t space-y-2 ${
-                seleccion === "parrillada" ? "border-background/20" : "border-border"
-              }`}
+              className={`pt-6 border-t space-y-2 ${seleccion === "parrillada" ? "border-background/20" : "border-border"
+                }`}
             >
               <div className="flex justify-between items-baseline">
                 <span
-                  className={`text-xs tracking-wider ${
-                    seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
-                  }`}
+                  className={`text-xs tracking-wider ${seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
+                    }`}
                 >
                   Por persona
                 </span>
@@ -188,9 +169,8 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
               </div>
               <div className="flex justify-between items-baseline">
                 <span
-                  className={`text-xs tracking-wider ${
-                    seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
-                  }`}
+                  className={`text-xs tracking-wider ${seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
+                    }`}
                 >
                   Total para {data.numInvitados} invitados
                 </span>

@@ -13,8 +13,8 @@ export const PRECIOS_INSTALACIONES = [
 export const TABULADOR_INSTALACIONES = PRECIOS_INSTALACIONES
 
 // Precios de comida por persona
-export const PRECIO_MENU_3_TIEMPOS = 1513
-export const PRECIO_PARRILLADA = 1623
+export const PRECIO_MENU_3_TIEMPOS = 1340
+export const PRECIO_PARRILLADA = 1450
 
 export const PRECIOS_COMIDA = {
   tresTiempos: PRECIO_MENU_3_TIEMPOS,
