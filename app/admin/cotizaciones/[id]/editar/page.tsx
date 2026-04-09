@@ -4,8 +4,10 @@ import { useState, useEffect, useMemo, use } from "react"
 import { useRouter } from "next/navigation"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { AdminLayout } from "@/components/admin/admin-layout"
-import { ArrowLeft, Save, Plus, Trash2, Search, Send, Copy, Check, ExternalLink } from "lucide-react"
+import { ArrowLeft, Save, Plus, Trash2, Search, Send, Copy, Check, ExternalLink, FileDown, FileSpreadsheet } from "lucide-react"
 import Link from "next/link"
+import { generarPdfCotizacion } from "@/lib/cotizacion-pdf"
+import { generarExcelCotizacion } from "@/lib/cotizacion-excel"
 
 interface Contact {
     id: string
@@ -42,6 +44,8 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
     const router = useRouter()
     const [saving, setSaving] = useState(false)
     const [sending, setSending] = useState(false)
+    const [loadingPDF, setLoadingPDF] = useState(false)
+    const [loadingExcel, setLoadingExcel] = useState(false)
     const [loading, setLoading] = useState(true)
     const [copied, setCopied] = useState(false)
 
@@ -233,6 +237,65 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
         setTimeout(() => setCopied(false), 2000)
     }
 
+    const handleDescargarPDF = async () => {
+        if (lineas.length === 0) {
+            alert("Agrega al menos una línea para descargar el PDF")
+            return
+        }
+        setLoadingPDF(true)
+        try {
+            const doc = await generarPdfCotizacion(
+                {
+                    titulo: titulo.trim(),
+                    contacts: selectedContact
+                        ? {
+                              nombre_pareja: selectedContact.nombre_pareja,
+                              fecha_evento: selectedContact.fecha_evento || undefined,
+                          }
+                        : null,
+                },
+                lineas as any,
+                selectedContact?.num_invitados || 1
+            )
+
+            const fileName = `cotizacion-${selectedContact?.nombre_pareja?.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "y") || slug}.pdf`
+            doc.save(fileName)
+        } catch (error) {
+            console.error("Error al generar PDF:", error)
+            alert("Error al generar el PDF")
+        } finally {
+            setLoadingPDF(false)
+        }
+    }
+
+    const handleDescargarExcel = async () => {
+        if (lineas.length === 0) {
+            alert("Agrega al menos una línea para descargar el Excel")
+            return
+        }
+        setLoadingExcel(true)
+        try {
+            await generarExcelCotizacion(
+                {
+                    titulo: titulo.trim(),
+                    contacts: selectedContact
+                        ? {
+                              nombre_pareja: selectedContact.nombre_pareja,
+                              fecha_evento: selectedContact.fecha_evento || undefined,
+                          }
+                        : null,
+                },
+                lineas as any,
+                selectedContact?.num_invitados || 1
+            )
+        } catch (error) {
+            console.error("Error al generar Excel:", error)
+            alert("Error al generar el Excel")
+        } finally {
+            setLoadingExcel(false)
+        }
+    }
+
     if (loading) {
         return (
             <AdminLayout currentPage="cotizaciones">
@@ -282,6 +345,22 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
                             <ExternalLink className="w-3.5 h-3.5" />
                             Ver
                         </Link>
+                        <button
+                            onClick={handleDescargarPDF}
+                            disabled={loadingPDF || lineas.length === 0}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-neutral-200 text-sm hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <FileDown className="w-3.5 h-3.5" />
+                            {loadingPDF ? "Generando PDF..." : "PDF"}
+                        </button>
+                        <button
+                            onClick={handleDescargarExcel}
+                            disabled={loadingExcel || lineas.length === 0}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-neutral-200 text-sm hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <FileSpreadsheet className="w-3.5 h-3.5" />
+                            {loadingExcel ? "Generando Excel..." : "Excel"}
+                        </button>
                     </div>
                 </div>
 

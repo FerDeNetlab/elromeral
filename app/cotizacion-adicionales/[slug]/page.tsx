@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar, Heart, FileDown, Minus, Plus } from "lucide-react"
 import Link from "next/link"
+import { generarPdfCotizacion } from "@/lib/cotizacion-pdf"
 
 interface Linea {
     id: string
@@ -144,78 +145,21 @@ export default function CotizacionPublicaPage({ params }: { params: Promise<{ sl
     const generarPDF = async () => {
         setDescargandoPDF(true)
         try {
-            const { jsPDF } = await import("jspdf")
-            const doc = new jsPDF()
-            const pageWidth = doc.internal.pageSize.getWidth()
+            const doc = await generarPdfCotizacion(
+                {
+                    titulo: cotizacion?.titulo || "COTIZACIÓN",
+                    contacts: cotizacion?.contacts || null,
+                },
+                lineas,
+                numInvitados,
+                itemsSeleccionados
+            )
 
-            doc.setFontSize(24)
-            doc.setTextColor(60, 60, 60)
-            doc.text("EL ROMERAL", pageWidth / 2, 25, { align: "center" })
-            doc.setFontSize(10)
-            doc.setTextColor(120, 120, 120)
-            doc.text((cotizacion?.titulo || "COTIZACIÓN").toUpperCase(), pageWidth / 2, 33, { align: "center" })
-
-            doc.setFontSize(14)
-            doc.setTextColor(80, 80, 80)
-            doc.text(cotizacion?.contacts?.nombre_pareja || "", pageWidth / 2, 45, { align: "center" })
-
-            if (cotizacion?.contacts?.fecha_evento) {
-                doc.setFontSize(10)
-                const dateStr = new Date(cotizacion.contacts.fecha_evento + "T00:00:00").toLocaleDateString("es-MX", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                })
-                doc.text(dateStr, pageWidth / 2, 52, { align: "center" })
-            }
-
-            let yPos = 70
-
-            categoriasAgrupadas.forEach((cat) => {
-                const items = cat.lineas.filter((l) => itemsSeleccionados[l.id])
-                if (items.length === 0) return
-
-                if (yPos > 260) { doc.addPage(); yPos = 20 }
-
-                doc.setFontSize(10)
-                doc.setTextColor(74, 80, 67)
-                doc.text(cat.nombre.toUpperCase(), 20, yPos)
-                yPos += 3
-                doc.setDrawColor(74, 80, 67)
-                doc.setLineWidth(0.3)
-                doc.line(20, yPos, pageWidth - 20, yPos)
-                yPos += 7
-
-                items.forEach((item) => {
-                    if (yPos > 270) { doc.addPage(); yPos = 20 }
-                    const cant = cantidades[item.id] || item.cantidad
-                    const qty = item.es_por_invitado ? cant * numInvitados : cant
-                    const subtotal = item.precio_unitario * qty
-                    doc.setFontSize(9)
-                    doc.setTextColor(40, 40, 40)
-                    const nombre = item.nombre.length > 60 ? item.nombre.substring(0, 60) + "..." : item.nombre
-                    doc.text(nombre, 25, yPos)
-                    doc.text(`$${subtotal.toLocaleString("es-MX")}`, pageWidth - 20, yPos, { align: "right" })
-                    yPos += 6
-                })
-                yPos += 6
-            })
-
-            yPos += 5
-            if (yPos > 260) { doc.addPage(); yPos = 20 }
-            doc.setFillColor(74, 80, 67)
-            doc.rect(20, yPos, pageWidth - 40, 15, "F")
-            yPos += 10
-            doc.setFontSize(12)
-            doc.setTextColor(255, 255, 255)
-            doc.text("TOTAL SELECCIONADO", 25, yPos)
-            doc.text(`$${totalSeleccionado.toLocaleString("es-MX")} MXN`, pageWidth - 25, yPos, { align: "right" })
-
-            yPos += 25
-            doc.setFontSize(8)
-            doc.setTextColor(120, 120, 120)
-            doc.text("Precios en moneda nacional - No incluye I.V.A.", pageWidth / 2, yPos, { align: "center" })
-            doc.text(`Generado el ${new Date().toLocaleDateString("es-MX")}`, pageWidth / 2, yPos + 5, { align: "center" })
+            // Apply cantidades modificadas (selected items with custom quantities)
+            const lineasConCantidades = lineas.map((l) => ({
+                ...l,
+                cantidad: cantidades[l.id] || l.cantidad,
+            }))
 
             const fileName = `cotizacion-${cotizacion?.contacts?.nombre_pareja?.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "y") || slug}.pdf`
             doc.save(fileName)
