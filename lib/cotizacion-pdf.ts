@@ -19,7 +19,7 @@ interface CotizacionData {
     titulo: string
     contacts?: {
         nombre_pareja: string
-        fecha_evento?: string
+        fecha_evento?: string | null
     } | null
 }
 
