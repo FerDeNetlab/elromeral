@@ -92,7 +92,7 @@ export async function generarPdfCotizacion(
         // Category title
         doc.setFontSize(11)
         doc.setTextColor(74, 80, 67)
-        doc.setFont(undefined, "bold")
+        doc.setFont("helvetica", "bold")
         doc.text(cat.nombre.toUpperCase(), margin, yPos)
         yPos += 7
 
@@ -104,7 +104,7 @@ export async function generarPdfCotizacion(
 
         // Table headers
         doc.setFontSize(9)
-        doc.setFont(undefined, "bold")
+        doc.setFont("helvetica", "bold")
         doc.setTextColor(40, 40, 40)
         doc.setFillColor(245, 245, 245)
         doc.rect(margin, yPos - 5, contentWidth, 6, "F")
@@ -134,7 +134,7 @@ export async function generarPdfCotizacion(
         yPos += 8
 
         // Table items
-        doc.setFont(undefined, "normal")
+        doc.setFont("helvetica", "normal")
         doc.setTextColor(40, 40, 40)
 
         cat.lineas.forEach((item, index) => {
@@ -206,7 +206,7 @@ export async function generarPdfCotizacion(
     yPos += 9
 
     doc.setFontSize(11)
-    doc.setFont(undefined, "bold")
+    doc.setFont("helvetica", "bold")
     doc.setTextColor(255, 255, 255)
     doc.text("TOTAL ESTIMADO", margin + 2, yPos)
     doc.text(`$${totalEstimado.toLocaleString("es-MX")} MXN`, pageWidth - margin - 2, yPos, { align: "right" })
@@ -215,7 +215,7 @@ export async function generarPdfCotizacion(
 
     // Footer
     doc.setFontSize(8)
-    doc.setFont(undefined, "normal")
+    doc.setFont("helvetica", "normal")
     doc.setTextColor(120, 120, 120)
     doc.text("Precios en moneda nacional - No incluye I.V.A.", pageWidth / 2, yPos, { align: "center" })
     doc.text(`Generado el ${new Date().toLocaleDateString("es-MX")}`, pageWidth / 2, yPos + 5, { align: "center" })
