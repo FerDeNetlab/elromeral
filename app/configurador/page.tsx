@@ -71,12 +71,15 @@ const initialData: ConfiguradorData = {
   extrasSeleccionados: [],
 }
 
-function ConfiguradorContent() {
+function ConfiguradorContent({ overrideData, overrideStep }: {
+  overrideData?: Partial<ConfiguradorData>
+  overrideStep?: number
+} = {}) {
   const searchParams = useSearchParams()
   const slugFromUrl = searchParams.get("cotizacion")
   const stepFromUrl = searchParams.get("step")
 
-  const [paso, setPaso] = useState(1)
+  const [paso, setPaso] = useState(overrideStep ?? 1)
   const [editandoDesdeResumen, setEditandoDesdeResumen] = useState(false)
   const [cargandoCotizacion, setCargandoCotizacion] = useState(false)
 
@@ -88,7 +91,9 @@ function ConfiguradorContent() {
   const leadAlertSent = useRef(false)
   const mainContentRef = useRef<HTMLDivElement>(null)
 
-  const [data, setData] = useState<ConfiguradorData>(initialData)
+  const [data, setData] = useState<ConfiguradorData>(
+    overrideData ? { ...initialData, ...overrideData } : initialData
+  )
 
   useEffect(() => {
     if (isInitialized.current && !cargandoCotizacion) {
@@ -100,6 +105,12 @@ function ConfiguradorContent() {
     const initializeData = async () => {
       if (isInitialized.current) return
       isInitialized.current = true
+
+      // Skip localStorage/Supabase loading when override data is provided (test mode)
+      if (overrideData) {
+        setCargandoCotizacion(false)
+        return
+      }
 
       if (slugFromUrl) {
         setCargandoCotizacion(true)
@@ -198,6 +209,8 @@ function ConfiguradorContent() {
 
   const guardarProgreso = useCallback(
     async (currentStep: number) => {
+      if (overrideData) return // test mode: no saving
+
       if (lastSavedStep.current === currentStep && currentSlug) return
 
       const tieneDataMinima = data.nombresNovios && data.email
@@ -320,6 +333,7 @@ function ConfiguradorContent() {
             onGoToStep={(step) => goToStep(step, true)}
             onCambiarInvitados={handleCambiarInvitados}
             onNuevaCotizacion={reiniciarCotizacion}
+            testMode={!!overrideData}
           />
         )
       default:
@@ -514,6 +528,8 @@ function ConfiguradorContent() {
     </div>
   )
 }
+
+export { ConfiguradorContent }
 
 export default function ConfiguradorPage() {
   return (

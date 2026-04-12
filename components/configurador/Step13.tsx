@@ -54,9 +54,10 @@ interface Step13Props {
   onGoToStep?: (step: number) => void
   onCambiarInvitados?: (nuevoNumero: number) => void
   onNuevaCotizacion?: () => void
+  testMode?: boolean
 }
 
-export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCotizacion }: Step13Props) {
+export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCotizacion, testMode }: Step13Props) {
   const [guardando, setGuardando] = useState(false)
   const [guardado, setGuardado] = useState(false)
   const [slug, setSlug] = useState("")
@@ -513,6 +514,13 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
   }
 
   const guardarCotizacion = async () => {
+    // En modo test: simular guardado exitoso sin tocar BD ni enviar correos
+    if (testMode) {
+      setGuardado(true)
+      setSlug("test-maria-pedro-preview")
+      return
+    }
+
     setGuardando(true)
     setError("")
 
