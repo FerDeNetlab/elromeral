@@ -339,3 +339,58 @@ export const DIAS_FESTIVOS = [
   "2027-11-15",
   "2027-12-25",
 ]
+
+// ============================================================================
+// TÍTULOS Y ESTRUCTURA DEL CONFIGURADOR
+// ============================================================================
+
+export const STEP_TITLES: Record<number, string> = {
+  1: "Cuéntennos sobre su día especial",
+  2: "El momento perfecto para su celebración",
+  3: "La experiencia gastronómica",
+  4: "El brindis y las celebraciones",
+  5: "Los espacios donde convivirán",
+  6: "Su mesa, su momento",
+  7: "La belleza en cada detalle",
+  8: "Protección y elegancia",
+  9: "La banda sonora de su historia",
+  10: "Donde todos celebrarán juntos",
+  11: "Un espacio sagrado",
+  12: "Momentos que completan la experiencia",
+  13: "Su experiencia diseñada",
+}
+
+export const TOTAL_CONFIGURADOR_STEPS = 13
+
+// ============================================================================
+// DATOS INICIALES DEL CONFIGURADOR
+// ============================================================================
+
+import type { ConfiguradorData } from "./types"
+
+export const INITIAL_CONFIGURADOR_DATA: ConfiguradorData = {
+  nombresNovios: "",
+  tipoEvento: "",
+  numInvitados: 100,
+  fechaEvento: "",
+  email: "",
+  telefono: "",
+  tipoComida: "",
+  incluyeVinosLicores: null,
+  mesasDefault: 0,
+  mesasShabbyChic: 0,
+  mesasMarmol: 0,
+  mesasReyArturo: 0,
+  mesasCristal: 0,
+  mesasParota: 0,
+  incluyeMesaNovios: null,
+  tipoMesaNovios: "",
+  tipoAsientoNovios: "",
+  arreglosFlorales: [],
+  tipoToldo: "",
+  tipoSuperficie: "",
+  tipoMusica: "",
+  tipoPista: "",
+  incluyeCapilla: false,
+  extrasSeleccionados: [],
+}

@@ -1,7 +1,5 @@
-"use client"
-
 import { Suspense } from "react"
-import { ConfiguradorContent } from "./ConfiguradorContent"
+import { ConfiguradorContent } from "@/app/configurador/ConfiguradorContent"
 
 export default function ConfiguradorPage() {
   return (

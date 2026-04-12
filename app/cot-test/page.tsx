@@ -3,7 +3,8 @@
 import { Suspense } from "react"
 import { ConfiguradorContent } from "@/app/configurador/ConfiguradorContent"
 
-// Datos pre-llenados para testing — edita aquí para cambiar los valores de prueba
+// Datos pre-llenados para testing
+// Edita aquí para cambiar los valores de prueba
 const TEST_DATA = {
   nombresNovios: "María & Pedro",
   tipoEvento: "cena",
@@ -11,12 +12,12 @@ const TEST_DATA = {
   fechaEvento: "2026-10-17",
   email: "test@elromeral.com",
   telefono: "3310000000",
-}
+} as const
 
 export default function CotTestPage() {
   return (
     <>
-      {/* Banner de modo test — visible solo aquí */}
+      {/* Banner de modo test — visible solo en esta ruta */}
       <div className="fixed top-0 left-0 right-0 z-[9999] bg-amber-400 text-amber-900 text-xs text-center py-1.5 font-medium tracking-widest uppercase">
         ⚠ Modo Test — No se envían correos ni se guarda en producción
       </div>

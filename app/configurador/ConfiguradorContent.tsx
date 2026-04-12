@@ -7,6 +7,8 @@ import { ArrowLeft, Check } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { saveQuoteProgress, loadFromLocalStorage, clearLocalStorage, saveToLocalStorage } from "@/lib/quote-progress"
+import type { ConfiguradorData } from "./types"
+import { STEP_TITLES, TOTAL_CONFIGURADOR_STEPS, INITIAL_CONFIGURADOR_DATA } from "./constants"
 
 import TotalFlotante from "@/components/configurador/TotalFlotante"
 import EditorInvitados from "@/components/configurador/EditorInvitados"
@@ -24,52 +26,10 @@ import Step11 from "@/components/configurador/Step11"
 import Step12 from "@/components/configurador/Step12"
 import Step13 from "@/components/configurador/Step13"
 
-import type { ConfiguradorData } from "./types"
+const stepTitles = STEP_TITLES
+const totalSteps = TOTAL_CONFIGURADOR_STEPS
 
-const stepTitles: Record<number, string> = {
-  1: "Cuéntennos sobre su día especial",
-  2: "El momento perfecto para su celebración",
-  3: "La experiencia gastronómica",
-  4: "El brindis y las celebraciones",
-  5: "Los espacios donde convivirán",
-  6: "Su mesa, su momento",
-  7: "La belleza en cada detalle",
-  8: "Protección y elegancia",
-  9: "La banda sonora de su historia",
-  10: "Donde todos celebrarán juntos",
-  11: "Un espacio sagrado",
-  12: "Momentos que completan la experiencia",
-  13: "Su experiencia diseñada",
-}
-
-const totalSteps = 13
-
-export const initialData: ConfiguradorData = {
-  nombresNovios: "",
-  tipoEvento: "",
-  numInvitados: 100,
-  fechaEvento: "",
-  email: "",
-  telefono: "",
-  tipoComida: "",
-  incluyeVinosLicores: null,
-  mesasDefault: 0,
-  mesasShabbyChic: 0,
-  mesasMarmol: 0,
-  mesasReyArturo: 0,
-  mesasCristal: 0,
-  mesasParota: 0,
-  incluyeMesaNovios: null,
-  tipoMesaNovios: "",
-  tipoAsientoNovios: "",
-  arreglosFlorales: [],
-  tipoToldo: "",
-  tipoSuperficie: "",
-  tipoMusica: "",
-  tipoPista: "",
-  incluyeCapilla: false,
-  extrasSeleccionados: [],
-}
+export const initialData = INITIAL_CONFIGURADOR_DATA
 
 export function ConfiguradorContent({ overrideData, overrideStep }: {
   overrideData?: Partial<ConfiguradorData>
