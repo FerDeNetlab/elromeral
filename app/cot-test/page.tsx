@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense } from "react"
-import { ConfiguradorContent } from "@/app/configurador/page"
+import { ConfiguradorContent } from "@/app/configurador/ConfiguradorContent"
 
 // Datos pre-llenados para testing — edita aquí para cambiar los valores de prueba
 const TEST_DATA = {

@@ -1,24 +1,30 @@
 "use client"
 
-import { Suspense } from "react"
-import { ConfiguradorContent } from "./ConfiguradorContent"
+import { useState, useMemo, useCallback, useEffect, useRef } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { ArrowLeft, Check } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { saveQuoteProgress, loadFromLocalStorage, clearLocalStorage, saveToLocalStorage } from "@/lib/quote-progress"
 
-export default function ConfiguradorPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <span className="text-sm text-muted-foreground font-extralight tracking-wide">Cargando...</span>
-          </div>
-        </div>
-      }
-    >
-      <ConfiguradorContent />
-    </Suspense>
-  )
-}
+import TotalFlotante from "@/components/configurador/TotalFlotante"
+import EditorInvitados from "@/components/configurador/EditorInvitados"
+import Step1 from "@/components/configurador/Step1"
+import Step2Nuevo from "@/components/configurador/Step2Nuevo"
+import Step2 from "@/components/configurador/Step2"
+import Step3 from "@/components/configurador/Step3"
+import Step4 from "@/components/configurador/Step4"
+import Step5 from "@/components/configurador/Step5"
+import Step6 from "@/components/configurador/Step6"
+import Step7 from "@/components/configurador/Step7"
+import Step9 from "@/components/configurador/Step9"
+import Step10 from "@/components/configurador/Step10"
+import Step11 from "@/components/configurador/Step11"
+import Step12 from "@/components/configurador/Step12"
+import Step13 from "@/components/configurador/Step13"
+
+import type { ConfiguradorData } from "./types"
 
 const stepTitles: Record<number, string> = {
   1: "Cuéntennos sobre su día especial",
@@ -38,7 +44,7 @@ const stepTitles: Record<number, string> = {
 
 const totalSteps = 13
 
-const initialData: ConfiguradorData = {
+export const initialData: ConfiguradorData = {
   nombresNovios: "",
   tipoEvento: "",
   numInvitados: 100,
@@ -65,7 +71,7 @@ const initialData: ConfiguradorData = {
   extrasSeleccionados: [],
 }
 
-function ConfiguradorContent({ overrideData, overrideStep }: {
+export function ConfiguradorContent({ overrideData, overrideStep }: {
   overrideData?: Partial<ConfiguradorData>
   overrideStep?: number
 } = {}) {
@@ -225,7 +231,6 @@ function ConfiguradorContent({ overrideData, overrideStep }: {
 
           if (currentStep === 2 && !leadAlertSent.current) {
             leadAlertSent.current = true
-            console.log("[v0] Enviando alerta de nuevo lead...")
             sendLeadAlert(data, currentStep, false)
           }
         }
@@ -520,24 +525,5 @@ function ConfiguradorContent({ overrideData, overrideStep }: {
         ) : null}
       </div>
     </div>
-  )
-}
-
-export { ConfiguradorContent }
-
-export default function ConfiguradorPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <span className="text-sm text-muted-foreground font-extralight tracking-wide">Cargando...</span>
-          </div>
-        </div>
-      }
-    >
-      <ConfiguradorContent />
-    </Suspense>
   )
 }
