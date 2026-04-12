@@ -130,7 +130,7 @@ export async function generarPdfCotizacion(
         doc.text("P. Unitario", xPos + 2, yPos)
         xPos += colWidths.precioUnitario
 
-        doc.text("Subtotal", xPos + 2, yPos, { align: "right" })
+        doc.text("Subtotal", pageWidth - margin, yPos, { align: "right" })
         yPos += 8
 
         // Table items
@@ -182,7 +182,7 @@ export async function generarPdfCotizacion(
             xPos += colWidths.precioUnitario
 
             // Subtotal
-            doc.text(`$${subtotal.toLocaleString("es-MX")}`, xPos + colWidths.precioUnitario - 2, yPos, { align: "right" })
+            doc.text(`$${subtotal.toLocaleString("es-MX")}`, pageWidth - margin - 2, yPos, { align: "right" })
 
             yPos += lineHeight
         })
