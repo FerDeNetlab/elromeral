@@ -151,12 +151,6 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
             </p>
           </a>
 
-          <div
-            className={`font-serif text-2xl font-light mb-8 ${capillaSeleccionada === true ? "text-background" : ""}`}
-          >
-            ${PRECIO_CAPILLA.toLocaleString("es-MX")}
-          </div>
-
           <div className={`mb-6 p-4 text-sm leading-relaxed ${capillaSeleccionada === true ? "bg-background/5 text-background/80" : "bg-neutral-50 text-neutral-700"}`}>
             <p className="mb-3">
               <span className="font-medium">Todo fluye en un mismo lugar.</span> Sin traslados, sin prisas, sin estrés logístico. Sus invitados pasan de la emoción de la ceremonia a la celebración del jardín de manera natural, mientras ustedes disfrutan cada momento con la certeza de que todo está bajo control.

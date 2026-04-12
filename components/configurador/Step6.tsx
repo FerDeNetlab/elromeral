@@ -212,12 +212,7 @@ export default function Step6({ data, onContinue, onChange }: StepProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                {rangoSeleccionado && (
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal:</span>
-                    <span className="font-medium">${subtotal.toLocaleString("es-MX")}</span>
-                  </div>
-                )}
+
               </div>
             )
           })}
@@ -225,12 +220,10 @@ export default function Step6({ data, onContinue, onChange }: StepProps) {
 
         {/* Desktop: Table layout */}
         <div className="hidden md:block">
-          <div className="grid grid-cols-[1.5fr_1fr_2.5fr_1fr_1fr] gap-4 pb-4 border-b border-neutral-900 mb-4">
+          <div className="grid grid-cols-[1.5fr_1fr_2.5fr] gap-4 pb-4 border-b border-neutral-900 mb-4">
             <span className="text-xs tracking-[0.2em] uppercase text-neutral-500">Tipo de Mesa</span>
             <span className="text-xs tracking-[0.2em] uppercase text-neutral-500 text-center">Cantidad</span>
             <span className="text-xs tracking-[0.2em] uppercase text-neutral-500">Arreglo Floral</span>
-            <span className="text-xs tracking-[0.2em] uppercase text-neutral-500 text-right">Precio c/u</span>
-            <span className="text-xs tracking-[0.2em] uppercase text-neutral-500 text-right">Subtotal</span>
           </div>
 
           <div className="space-y-0 mb-12">
@@ -245,7 +238,7 @@ export default function Step6({ data, onContinue, onChange }: StepProps) {
               return (
                 <div
                   key={grupo.tipo}
-                  className="grid grid-cols-[1.5fr_1fr_2.5fr_1fr_1fr] gap-4 py-4 border-b border-neutral-200 items-center"
+                  className="grid grid-cols-[1.5fr_1fr_2.5fr] gap-4 py-4 border-b border-neutral-200 items-center"
                 >
                   <span className="text-sm text-neutral-900 font-medium">{getNombreTipo(grupo.tipo)}</span>
                   <span className="text-sm text-neutral-600 text-center font-serif">{grupo.cantidad} mesas</span>
@@ -261,23 +254,9 @@ export default function Step6({ data, onContinue, onChange }: StepProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <span className="text-right font-serif text-sm">
-                    {rangoSeleccionado ? `$${precioPorMesa.toLocaleString("es-MX")}` : "-"}
-                  </span>
-                  <span className="text-right font-serif font-medium">
-                    {rangoSeleccionado ? `$${subtotal.toLocaleString("es-MX")}` : "-"}
-                  </span>
                 </div>
               )
             })}
-          </div>
-        </div>
-
-        {/* Total */}
-        <div className="border-t border-b border-neutral-900 py-8 mb-8">
-          <div className="flex justify-between items-center">
-            <span className="font-serif text-xl tracking-wide">Total Floristería</span>
-            <span className="font-serif text-3xl">${calcularTotalFlores().toLocaleString("es-MX")}</span>
           </div>
         </div>
 

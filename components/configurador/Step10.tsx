@@ -111,11 +111,7 @@ export default function Step10({ data, onContinue, onChange }: Step10Props) {
             Pista Iluminada LED
           </h3>
 
-          <div
-            className={`font-serif text-2xl font-light mb-8 ${tipoPistaSeleccionada === "iluminada" ? "text-background" : ""}`}
-          >
-            ${PRECIO_PISTA_ILUMINADA.toLocaleString("es-MX")}
-          </div>
+
 
           <ul className="space-y-3">
             <li className="flex items-start gap-3 text-sm font-light">
@@ -180,11 +176,7 @@ export default function Step10({ data, onContinue, onChange }: Step10Props) {
             Pista Pintada a Mano
           </h3>
 
-          <div
-            className={`font-serif text-2xl font-light mb-8 ${tipoPistaSeleccionada === "pintada" ? "text-background" : ""}`}
-          >
-            ${precioPistaPintada.toLocaleString("es-MX")}
-          </div>
+
 
           <ul className="space-y-3">
             <li className="flex items-start gap-3 text-sm font-light">

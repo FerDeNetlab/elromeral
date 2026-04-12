@@ -135,7 +135,7 @@ export default function Step4({ data, onContinue, onChange }: Step4Props) {
           )}
         </div>
         <p className="text-sm text-neutral-500 tracking-wide mt-1">
-          {precio === 0 ? "Incluida" : `$${precio.toLocaleString("es-MX")} por mesa`}
+          {precio === 0 ? "Incluida" : ""}
         </p>
         {max && <p className="text-xs text-amber-700 mt-1 tracking-wide">Máximo: {max} mesas</p>}
       </div>
@@ -239,14 +239,6 @@ export default function Step4({ data, onContinue, onChange }: Step4Props) {
             tipoMesa="parota"
             imageSrc={MESA_IMAGES.parota}
           />
-        </div>
-
-        {/* Total */}
-        <div className="border-t border-b border-foreground py-6 sm:py-8 mb-8 sm:mb-12">
-          <div className="flex justify-between items-center gap-4">
-            <span className="font-serif text-lg sm:text-xl tracking-wide">Total Mobiliario</span>
-            <span className="font-serif text-2xl sm:text-3xl">${calcularPrecioMesas().toLocaleString("es-MX")}</span>
-          </div>
         </div>
 
         {/* Continue Button */}

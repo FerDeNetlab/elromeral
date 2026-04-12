@@ -134,7 +134,7 @@ export default function Step3({ data, onChange, onContinue }: Step3Props) {
               ))}
             </div>
 
-            <div className={`pt-6 border-t space-y-2 ${seleccion === true ? "border-background/20" : "border-border"}`}>
+            <div className={`pt-6 border-t space-y-2 ${seleccion === true ? "border-background/20" : "border-border"} hidden`}>
               <div className="flex justify-between items-baseline">
                 <span
                   className={`text-xs tracking-wider ${seleccion === true ? "text-background/60" : "text-muted-foreground"}`}

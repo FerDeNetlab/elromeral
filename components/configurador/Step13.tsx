@@ -868,7 +868,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
 
           {/* Desglose de inversión */}
           <div className="space-y-8">
-            <h3 className="font-serif text-xl text-neutral-800 text-center tracking-wide">Desglose de Inversión</h3>
+            <h3 className="font-serif text-xl text-neutral-800 text-center tracking-wide">Lo que incluye tu boda</h3>
 
             <div className="border border-neutral-200 divide-y divide-neutral-200">
               {/* Renta de Instalaciones - Paso 1 */}
@@ -881,15 +881,8 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                       <p className="text-xs text-neutral-500">{data.numInvitados} invitados</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-sm text-neutral-400">
-                        <span className="line-through">${(precioInstalaciones + 20000).toLocaleString("es-MX")}</span>
-                        <span className="ml-1 text-xs">Precio regular</span>
-                      </p>
-                      <p className="font-light text-neutral-800">${precioInstalaciones.toLocaleString("es-MX")}</p>
-                    </div>
-                    <BotonEditar paso={1} label="Instalaciones" />
+                  <div className="flex justify-end items-start">
+                  <BotonEditar paso={1} label="Instalaciones" />
                   </div>
                 </div>
 
@@ -1006,7 +999,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right hidden">
                     <p className="text-sm text-neutral-400">
                       <span className="line-through">$40,500</span>
                       <span className="ml-1 text-xs">Valor real</span>
@@ -1087,7 +1080,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">${precioComida.toLocaleString("es-MX")}</span>
                   <BotonEditar paso={3} label="Menú" />
                 </div>
               </div>
@@ -1104,9 +1096,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioBebidas > 0 ? `$${precioBebidas.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={4} label="Bebidas" />
                 </div>
               </div>
@@ -1121,9 +1110,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioMesas > 0 ? `$${precioMesas.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={5} label="Mobiliario" />
                 </div>
               </div>
@@ -1140,9 +1126,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioMesaNovios > 0 ? `$${precioMesaNovios.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={6} label="Mesa de Novios" />
                 </div>
               </div>
@@ -1157,9 +1140,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioFlores > 0 ? `$${precioFlores.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={7} label="Flores" />
                 </div>
               </div>
@@ -1180,9 +1160,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioToldo > 0 ? `$${precioToldo.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={8} label="Toldo" />
                 </div>
               </div>
@@ -1203,9 +1180,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioMusica > 0 ? `$${precioMusica.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={9} label="Música" />
                 </div>
               </div>
@@ -1226,9 +1200,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioPista > 0 ? `$${precioPista.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={10} label="Pista" />
                 </div>
               </div>
@@ -1243,9 +1214,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-light text-neutral-800">
-                    {precioCapilla > 0 ? `$${precioCapilla.toLocaleString("es-MX")}` : "—"}
-                  </span>
                   <BotonEditar paso={11} label="Capilla" />
                 </div>
               </div>

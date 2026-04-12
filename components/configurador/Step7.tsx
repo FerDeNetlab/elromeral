@@ -137,7 +137,7 @@ export default function Step7({ data, onContinue, onChange }: Step7Props) {
                 </div>
 
                 <div className={`font-serif text-3xl mb-8 ${toldoSeleccionado === opcion.id ? "text-background" : ""}`}>
-                  {opcion.precio === 0 ? "Incluido" : `$${opcion.precio.toLocaleString("es-MX")}`}
+                  {opcion.precio === 0 ? "Incluido" : ""}
                 </div>
 
                 <ul className="space-y-3">

@@ -9,8 +9,8 @@ interface TotalFlotanteProps {
 }
 
 export default function TotalFlotante({ data, paso }: TotalFlotanteProps) {
-  // No mostrar en el paso 1 o paso 13 (resumen final)
-  if (paso === 1 || paso === 13) return null
+  // Ocultar total flotante en todos los pasos (clientes no ven precios unitarios)
+  return null
 
   const total = calcularPrecioTotal(data)
 

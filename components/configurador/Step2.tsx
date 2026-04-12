@@ -89,31 +89,7 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
               ))}
             </div>
 
-            <div
-              className={`pt-6 border-t space-y-2 ${seleccion === "menu3tiempos" ? "border-background/20" : "border-border"
-                }`}
-            >
-              <div className="flex justify-between items-baseline">
-                <span
-                  className={`text-xs tracking-wider ${seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
-                    }`}
-                >
-                  Por persona
-                </span>
-                <span className="font-serif text-lg">${PRECIO_MENU_3_TIEMPOS.toLocaleString()} MXN</span>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <span
-                  className={`text-xs tracking-wider ${seleccion === "menu3tiempos" ? "text-background/60" : "text-muted-foreground"
-                    }`}
-                >
-                  Total para {data.numInvitados} invitados
-                </span>
-                <span className="font-serif text-2xl font-light">
-                  ${(PRECIO_MENU_3_TIEMPOS * data.numInvitados).toLocaleString()} MXN
-                </span>
-              </div>
-            </div>
+
           </div>
         </button>
 
@@ -154,31 +130,7 @@ export default function Step2({ data, onChange, onContinue }: Step2Props) {
               ))}
             </div>
 
-            <div
-              className={`pt-6 border-t space-y-2 ${seleccion === "parrillada" ? "border-background/20" : "border-border"
-                }`}
-            >
-              <div className="flex justify-between items-baseline">
-                <span
-                  className={`text-xs tracking-wider ${seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
-                    }`}
-                >
-                  Por persona
-                </span>
-                <span className="font-serif text-lg">${PRECIO_PARRILLADA.toLocaleString()} MXN</span>
-              </div>
-              <div className="flex justify-between items-baseline">
-                <span
-                  className={`text-xs tracking-wider ${seleccion === "parrillada" ? "text-background/60" : "text-muted-foreground"
-                    }`}
-                >
-                  Total para {data.numInvitados} invitados
-                </span>
-                <span className="font-serif text-2xl font-light">
-                  ${(PRECIO_PARRILLADA * data.numInvitados).toLocaleString()} MXN
-                </span>
-              </div>
-            </div>
+
           </div>
         </button>
       </div>

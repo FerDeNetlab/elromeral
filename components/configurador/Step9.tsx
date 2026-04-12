@@ -115,14 +115,9 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
                   key={idx}
                   className={`pb-4 border-b last:border-0 ${musicaSeleccionada === "dj" ? "border-background/20" : "border-neutral-200"}`}
                 >
-                  <div className="flex justify-between items-start gap-2 mb-2">
+                  <div className="flex items-start gap-2 mb-2">
                     <span className={musicaSeleccionada === "dj" ? "text-background/80" : "text-neutral-600"}>
                       {item.nombre}
-                    </span>
-                    <span
-                      className={`font-medium whitespace-nowrap ${musicaSeleccionada === "dj" ? "text-background" : ""}`}
-                    >
-                      ${item.precio.toLocaleString("es-MX")}
                     </span>
                   </div>
                   {item.tieneDescripcion && (
@@ -192,7 +187,7 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
               </div>
             </div>
 
-            <div className={`font-serif text-3xl mb-8 ${musicaSeleccionada === "grupo" ? "text-background" : ""}`}>
+            <div className={`font-serif text-3xl mb-8 hidden`}>
               ${PRECIO_PLANTA_LUZ_GRUPO.toLocaleString("es-MX")}
             </div>
 
@@ -202,13 +197,10 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
             </p>
 
             <div
-              className={`flex justify-between items-start gap-2 text-sm pb-3 border-b ${musicaSeleccionada === "grupo" ? "border-background/20" : "border-neutral-200"}`}
+              className={`flex items-start gap-2 text-sm pb-3 border-b ${musicaSeleccionada === "grupo" ? "border-background/20" : "border-neutral-200"}`}
             >
               <span className={musicaSeleccionada === "grupo" ? "text-background/80" : "text-neutral-600"}>
                 Planta de luz dedicada
-              </span>
-              <span className={`font-medium ${musicaSeleccionada === "grupo" ? "text-background" : ""}`}>
-                ${PRECIO_PLANTA_LUZ_GRUPO.toLocaleString("es-MX")}
               </span>
             </div>
           </div>

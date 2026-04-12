@@ -97,8 +97,6 @@ export default function Step5({
 
           <h3 className="font-serif text-xl sm:text-2xl md:text-3xl font-light mb-4 sm:mb-6">Su escenario propio</h3>
 
-          <p className="font-serif text-xl sm:text-2xl font-light mb-4 sm:mb-6">$26,050</p>
-
           <ul className="text-xs sm:text-sm font-light space-y-2 opacity-80 leading-relaxed">
             <li>• Su mesa en el estilo que elijan</li>
             <li>• Sillones o sillas que los destaquen</li>
