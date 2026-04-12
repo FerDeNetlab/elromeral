@@ -452,7 +452,7 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
         categoria: "Ceremonia Religiosa",
         items: [
           {
-            descripcion: "Capilla Cristo del Romeral (Consagrada) con coordinación, coro y floristería",
+            descripcion: "Capilla Cristo del Romeral (Consagrada) — Iluminaciones arquitectónicas dentro y fuera de capilla, telas cubre reclinatorios, banca doble para novios y sillón para padre tejido en tule, oficiamiento de la ceremonia",
             cantidad: 1,
             precioUnitario: precioCapilla,
             total: precioCapilla,

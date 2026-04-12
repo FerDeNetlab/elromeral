@@ -88,10 +88,6 @@ export async function POST(request: NextRequest) {
                       <td style="padding: 10px 0; color: #888; font-size: 13px;">Invitados</td>
                       <td style="padding: 10px 0; color: #1a1a1a; font-size: 14px; text-align: right;">${Number(numInvitados) || 0} personas</td>
                     </tr>
-                    <tr>
-                      <td style="padding: 15px 0 0 0; color: #888; font-size: 13px; border-top: 1px solid #ddd;">Total estimado</td>
-                      <td style="padding: 15px 0 0 0; color: #c9a96e; font-size: 22px; font-weight: 600; text-align: right; border-top: 1px solid #ddd;">${formattedTotal}</td>
-                    </tr>
                   </table>
                 </div>
                 
