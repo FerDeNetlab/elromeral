@@ -3,7 +3,7 @@
  * Creates a formatted spreadsheet with categories and line items
  */
 
-import * as XLSX from "xlsx"
+// Note: xlsx is loaded dynamically to avoid SSR issues
 
 interface LineaItem {
     id: string
@@ -39,6 +39,9 @@ export async function generarExcelCotizacion(
     lineas: LineaItem[],
     numInvitados: number = 1
 ) {
+    // Dynamic import to avoid SSR issues
+    const XLSX = await import("xlsx")
+
     // Group by category
     const categoriasAgrupadas = agruparPorCategoria(lineas)
 

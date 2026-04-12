@@ -440,10 +440,9 @@ export default function NuevaCotizacionPage() {
                                                 ) : (
                                                     <input
                                                         type="number"
-                                                        min="1"
+                                                        min={1}
                                                         value={linea.cantidad}
                                                         onChange={(e) => updateLinea(linea.tempId, "cantidad", Math.max(1, parseInt(e.target.value) || 1))}
-                                                        min={1}
                                                         placeholder="Cant."
                                                         className="px-2 py-1.5 border border-neutral-200 text-sm text-center"
                                                     />
