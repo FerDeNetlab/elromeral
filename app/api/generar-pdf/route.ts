@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { sanitizeHtml } from "@/lib/utils"
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
       for (const partida of partidas) {
         html += `
           <tr class="categoria-header">
-            <td colspan="4"><strong>${partida.categoria}</strong></td>
+            <td colspan="4"><strong>${sanitizeHtml(partida.categoria)}</strong></td>
           </tr>
         `
 
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
           html += `
             <tr>
               <td class="text-center">${item.cantidad}</td>
-              <td>${item.descripcion}</td>
+              <td>${sanitizeHtml(item.descripcion)}</td>
               <td class="text-right">$${item.precioUnitario?.toLocaleString("es-MX") || 0}</td>
               <td class="text-right"><strong>$${item.total?.toLocaleString("es-MX") || 0}</strong></td>
             </tr>
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
         const subtotal = (partida.items || []).reduce((sum: number, item: any) => sum + (item.total || 0), 0)
         html += `
           <tr class="subtotal-row">
-            <td colspan="3" class="text-right"><strong>Subtotal ${partida.categoria}</strong></td>
+            <td colspan="3" class="text-right"><strong>Subtotal ${sanitizeHtml(partida.categoria)}</strong></td>
             <td class="text-right"><strong>$${subtotal.toLocaleString("es-MX")}</strong></td>
           </tr>
         `
@@ -440,7 +441,7 @@ export async function GET(request: NextRequest) {
   </div>
 
   <div class="event-header">
-    <div class="event-names">${quote.nombres || "Los Novios"}</div>
+    <div class="event-names">${sanitizeHtml(quote.nombres) || "Los Novios"}</div>
     <div class="event-date">${formatearFecha(quote.fecha_evento || "")}</div>
   </div>
 

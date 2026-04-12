@@ -13,10 +13,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Base de datos no configurada" }, { status: 500 })
     }
 
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY not configured")
+      return NextResponse.json({ error: "Servicio de admin no disponible" }, { status: 500 })
+    }
+
     const resend = new Resend(process.env.RESEND_API_KEY)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
     )
 
     const { quoteName, quoteSlug, quoteTotal, quoteDate, numInvitados } = await request.json()

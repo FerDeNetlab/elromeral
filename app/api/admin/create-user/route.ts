@@ -1,8 +1,27 @@
 import { createClient } from "@supabase/supabase-js"
-import { NextResponse } from "next/server"
+import { NextResponse, type NextRequest } from "next/server"
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit"
 
-export async function POST(request: Request) {
+// Rate limit: 5 attempts per 15 minutes per IP
+const rateLimiter = createRateLimiter({ maxRequests: 5, windowMs: 15 * 60 * 1000 })
+
+export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request)
+    const rateLimitResult = rateLimiter(clientIp)
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta más tarde." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)),
+          },
+        }
+      )
+    }
+
     const { secretKey, email, password } = await request.json()
 
     // Verificar clave secreta para evitar acceso no autorizado

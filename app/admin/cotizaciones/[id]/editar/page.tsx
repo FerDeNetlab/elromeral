@@ -438,7 +438,7 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
                                         <div className="hidden md:grid grid-cols-[2fr_1fr_100px_80px_100px_1fr_40px] gap-2 items-center">
                                             <input type="text" value={linea.nombre} onChange={(e) => updateLinea(linea.tempId, "nombre", e.target.value)} className="px-2 py-1.5 border border-neutral-200 text-sm focus:border-neutral-400 focus:outline-none" />
                                             <input type="text" value={linea.categoria} onChange={(e) => updateLinea(linea.tempId, "categoria", e.target.value)} className="px-2 py-1.5 border border-neutral-200 text-sm focus:border-neutral-400 focus:outline-none" />
-                                            <input type="number" value={linea.precio_unitario} onChange={(e) => updateLinea(linea.tempId, "precio_unitario", parseFloat(e.target.value) || 0)} className="px-2 py-1.5 border border-neutral-200 text-sm text-right focus:border-neutral-400 focus:outline-none" />
+                                            <input type="number" min="0" step="0.01" value={linea.precio_unitario} onChange={(e) => updateLinea(linea.tempId, "precio_unitario", Math.max(0, parseFloat(e.target.value) || 0))} className="px-2 py-1.5 border border-neutral-200 text-sm text-right focus:border-neutral-400 focus:outline-none" />
                                             {linea.es_por_invitado ? (
                                                 <div className="px-2 py-1.5 border border-neutral-100 bg-neutral-50 text-sm text-center text-neutral-400">{numInv}</div>
                                             ) : (
@@ -454,7 +454,7 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
                                                 <button onClick={() => removeLinea(linea.tempId)} className="text-neutral-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                                             </div>
                                             <div className="grid grid-cols-3 gap-2">
-                                                <input type="number" value={linea.precio_unitario} onChange={(e) => updateLinea(linea.tempId, "precio_unitario", parseFloat(e.target.value) || 0)} className="px-2 py-1.5 border border-neutral-200 text-sm" />
+                                                <input type="number" min="0" step="0.01" value={linea.precio_unitario} onChange={(e) => updateLinea(linea.tempId, "precio_unitario", Math.max(0, parseFloat(e.target.value) || 0))} className="px-2 py-1.5 border border-neutral-200 text-sm" />
                                                 {linea.es_por_invitado ? (
                                                     <div className="px-2 py-1.5 border border-neutral-100 bg-neutral-50 text-sm text-center text-neutral-400">{numInv} inv.</div>
                                                 ) : (

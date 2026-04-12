@@ -1,10 +1,18 @@
 import { Resend } from "resend"
 import { type NextRequest, NextResponse } from "next/server"
 import { sanitizeHtml } from "@/lib/utils"
+import { z } from "zod"
+
+// Improved email validation using Zod
+const EmailSchema = z.string().email("Email inválido").min(3).max(254)
 
 function isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
+    try {
+        EmailSchema.parse(email)
+        return true
+    } catch {
+        return false
+    }
 }
 
 export async function POST(request: NextRequest) {

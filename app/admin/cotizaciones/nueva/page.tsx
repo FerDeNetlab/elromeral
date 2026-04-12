@@ -369,8 +369,10 @@ export default function NuevaCotizacionPage() {
                                             />
                                             <input
                                                 type="number"
+                                                min="0"
+                                                step="0.01"
                                                 value={linea.precio_unitario}
-                                                onChange={(e) => updateLinea(linea.tempId, "precio_unitario", parseFloat(e.target.value) || 0)}
+                                                onChange={(e) => updateLinea(linea.tempId, "precio_unitario", Math.max(0, parseFloat(e.target.value) || 0))}
                                                 className="px-2 py-1.5 border border-neutral-200 text-sm text-right focus:border-neutral-400 focus:outline-none"
                                             />
                                             {linea.es_por_invitado ? (
@@ -381,8 +383,8 @@ export default function NuevaCotizacionPage() {
                                                 <input
                                                     type="number"
                                                     value={linea.cantidad}
-                                                    onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)}
-                                                    min={1}
+                                                    onChange={(e) => updateLinea(linea.tempId, "cantidad", Math.max(1, parseInt(e.target.value) || 1))}
+                                                    min="1"
                                                     className="px-2 py-1.5 border border-neutral-200 text-sm text-center focus:border-neutral-400 focus:outline-none"
                                                 />
                                             )}
@@ -424,8 +426,10 @@ export default function NuevaCotizacionPage() {
                                             <div className="grid grid-cols-3 gap-2">
                                                 <input
                                                     type="number"
+                                                    min="0"
+                                                    step="0.01"
                                                     value={linea.precio_unitario}
-                                                    onChange={(e) => updateLinea(linea.tempId, "precio_unitario", parseFloat(e.target.value) || 0)}
+                                                    onChange={(e) => updateLinea(linea.tempId, "precio_unitario", Math.max(0, parseFloat(e.target.value) || 0))}
                                                     placeholder="Precio"
                                                     className="px-2 py-1.5 border border-neutral-200 text-sm"
                                                 />
@@ -436,8 +440,9 @@ export default function NuevaCotizacionPage() {
                                                 ) : (
                                                     <input
                                                         type="number"
+                                                        min="1"
                                                         value={linea.cantidad}
-                                                        onChange={(e) => updateLinea(linea.tempId, "cantidad", parseInt(e.target.value) || 1)}
+                                                        onChange={(e) => updateLinea(linea.tempId, "cantidad", Math.max(1, parseInt(e.target.value) || 1))}
                                                         min={1}
                                                         placeholder="Cant."
                                                         className="px-2 py-1.5 border border-neutral-200 text-sm text-center"
