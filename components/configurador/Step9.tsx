@@ -2,12 +2,6 @@
 
 import { useState } from "react"
 import { Music, Sparkles } from "lucide-react"
-import {
-  PRECIO_DJ_GRUPO_RESET,
-  PRECIO_EQUIPO_SONIDO,
-  PRECIO_LUCES_ROBOTICAS,
-  PRECIO_PLANTA_LUZ_GRUPO,
-} from "@/app/configurador/constants"
 import type { ConfiguradorData } from "@/app/configurador/types"
 import { scrollToBottom } from "@/lib/scroll-utils"
 
@@ -24,27 +18,24 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
 
   const esCena = data.tipoEvento === "cena"
 
-  const costosDJBase = [
-    { nombre: "DJ Romeral (5 horas)", precio: PRECIO_DJ_GRUPO_RESET },
+  const opcionesDJ = [
+    { nombre: "DJ Romeral (5 horas)", tipo: "dj_base" },
     {
       nombre: "Equipo de sonido Bose profesional",
-      precio: PRECIO_EQUIPO_SONIDO,
       tieneDescripcion: true,
       tipo: "equipo",
     },
   ]
 
-  const costosDJCena = [
+  const opcionesCena = [
     {
       nombre: "Iluminación profesional de pista",
-      precio: PRECIO_LUCES_ROBOTICAS,
       tieneDescripcion: true,
       tipo: "iluminacion",
     },
   ]
 
-  const costosDJ = esCena ? [...costosDJBase, ...costosDJCena] : costosDJBase
-  const totalDJ = costosDJ.reduce((sum, item) => sum + item.precio, 0)
+  const opcionesCompletas = esCena ? [...opcionesDJ, ...opcionesCena] : opcionesDJ
 
   const handleMusicaChange = (tipo: "dj" | "grupo") => {
     setMusicaSeleccionada(tipo)
@@ -105,12 +96,8 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
               </div>
             </div>
 
-            <div className={`font-serif text-3xl mb-8 ${musicaSeleccionada === "dj" ? "text-background" : ""}`}>
-              ${totalDJ.toLocaleString("es-MX")}
-            </div>
-
             <div className="space-y-4 text-sm">
-              {costosDJ.map((item, idx) => (
+              {opcionesCompletas.map((item, idx) => (
                 <div
                   key={idx}
                   className={`pb-4 border-b last:border-0 ${musicaSeleccionada === "dj" ? "border-background/20" : "border-neutral-200"}`}
@@ -185,10 +172,6 @@ export default function Step9({ data, onContinue, onChange }: Step9Props) {
                   Trae tu grupo favorito
                 </p>
               </div>
-            </div>
-
-            <div className={`font-serif text-3xl mb-8 hidden`}>
-              ${PRECIO_PLANTA_LUZ_GRUPO.toLocaleString("es-MX")}
             </div>
 
             <p className={`text-sm mb-6 ${musicaSeleccionada === "grupo" ? "text-background/80" : "text-neutral-600"}`}>

@@ -1007,13 +1007,6 @@ export default function Step13({ data, onGoToStep, onCambiarInvitados, onNuevaCo
                       )}
                     </div>
                   </div>
-                  <div className="text-right hidden">
-                    <p className="text-sm text-neutral-400">
-                      <span className="line-through">$40,500</span>
-                      <span className="ml-1 text-xs">Valor real</span>
-                    </p>
-                    <p className="font-light text-primary">$0</p>
-                  </div>
                 </div>
 
                 {/* Nota y servicios externos para Dirección Integral */}

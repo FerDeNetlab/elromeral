@@ -103,12 +103,6 @@ export default function Step8({ data, onContinue, onChange }: Step8Props) {
                 </button>
               </div>
 
-              <div
-                className={`font-serif text-2xl font-light mb-8 ${superficieSeleccionada === opcion.id ? "text-background" : ""}`}
-              >
-                {opcion.precio === 0 ? "Incluido" : `$${opcion.precio.toLocaleString("es-MX")}`}
-              </div>
-
               <ul className="space-y-3">
                 {opcion.caracteristicas.map((car, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-sm font-light">
