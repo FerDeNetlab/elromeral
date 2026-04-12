@@ -308,7 +308,7 @@ export default function EditarCotizacionPage({ params }: { params: Promise<{ id:
 
     return (
         <AdminLayout currentPage="cotizaciones">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
                 <Link
                     href="/admin/cotizaciones"
                     className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 mb-6 transition-colors"
