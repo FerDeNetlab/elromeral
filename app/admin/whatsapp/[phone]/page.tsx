@@ -93,7 +93,16 @@ export default function WhatsAppChatPage({ params }: { params: Promise<{ phone: 
         table: "whatsapp_messages",
         filter: `phone=eq.${decodedPhone}`,
       }, (payload) => {
-        setMessages((prev) => [...prev, payload.new as WaMessage])
+        const newMsg = payload.new as WaMessage
+        setMessages((prev) => {
+          // Reemplazar mensaje optimístico si existe, sino agregar
+          const withoutOptimistic = prev.filter(
+            (m) => !(m.id.startsWith("optimistic-") && m.direction === newMsg.direction && m.text === newMsg.text)
+          )
+          // Evitar duplicados por message_id
+          if (withoutOptimistic.some((m) => m.id === newMsg.id)) return prev
+          return [...withoutOptimistic, newMsg]
+        })
       })
       .on("postgres_changes", {
         event: "UPDATE",
