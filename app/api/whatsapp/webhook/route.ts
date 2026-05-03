@@ -18,12 +18,14 @@ import {
   buildAdvisorNotifiedMessage,
   buildAvailabilityMessage,
   buildBudgetLowCloseMessage,
+  buildBudgetLowReconsiderMessage,
   buildBudgetOptionsMessage,
   buildBudgetQualifiedMessage,
   buildCalendlyMessage,
   buildCollectDateMessage,
   buildCollectGuestsMessage,
   buildCollectScheduleMessage,
+  buildGuestEmotionalMessage,
   buildNeedsHumanMessage,
   buildNotQualifiedMessage,
   buildWelcomeMessage,
@@ -367,13 +369,17 @@ async function runFunnel(
   if (stage === "collect_guests") {
     const guestRange = parseGuestRangeFromText(userMessage)
     if (guestRange) {
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", "→budget")
+      // Mensaje emocional según el tamaño, luego muestra opciones de presupuesto
+      const emotionalMsg = buildGuestEmotionalMessage(nombre, guestRange)
+      const budgetMsg = buildBudgetOptionsMessage(nombre, guestRange)
+      const combined = `${emotionalMsg}\n\n${budgetMsg}`
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", combined)
       await updateLead(lead.id, {
         num_invitados: guestRangeToApprox(guestRange),
         source_detail: { ...detail, wa_stage: "collect_budget", wa_rango_invitados: guestRange, wa_conversation_history: newHistory } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
       })
-      return buildBudgetOptionsMessage(nombre, guestRange)
+      return combined
     }
     // No entendió → Claude pide aclaración
     const clarify = await generateBotResponse(lead, userMessage, history)
@@ -386,15 +392,10 @@ async function runFunnel(
   if (stage === "collect_budget") {
     const guestRange = detail.wa_rango_invitados ?? "150-200"
 
-    // Intentar por opción (1/2/3 o bajo/medio/alto)
     let qualification = parseBudgetOption(userMessage)
-
-    // Si no, intentar por monto en pesos
     if (!qualification) {
       const amount = parseMXNAmount(userMessage)
-      if (amount) {
-        qualification = classifyBudget(amount, guestRange)
-      }
+      if (amount) qualification = classifyBudget(amount, guestRange)
     }
 
     if (qualification) {
@@ -406,11 +407,10 @@ async function runFunnel(
       }
 
       if (qualification === "bajo") {
-        const closeMsg = buildBudgetLowCloseMessage(nombre)
-        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "not_qualified"
-        ;(basePatch as Record<string, unknown>).etiqueta_wa = "not_qualified"
+        const reconsiderMsg = buildBudgetLowReconsiderMessage(nombre, guestRange)
+        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "budget_low_reconsider"
         await updateLead(lead.id, basePatch)
-        return closeMsg
+        return reconsiderMsg
       } else {
         const qualMsg = buildBudgetQualifiedMessage(nombre)
         ;(basePatch.source_detail as WaSourceDetail).wa_stage = "collect_appointment"
@@ -424,6 +424,33 @@ async function runFunnel(
     const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", clarify.text)
     await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
     return clarify.text
+  }
+
+  // ── BUDGET_LOW_RECONSIDER: ¿puede ajustar? ──
+  if (stage === "budget_low_reconsider") {
+    const guestRange = detail.wa_rango_invitados ?? "150-200"
+    const answer = parseYesNo(userMessage)
+    if (answer === true) {
+      // Vuelve a mostrar opciones de presupuesto
+      const budgetMsg = buildBudgetOptionsMessage(nombre, guestRange)
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", budgetMsg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_budget", wa_conversation_history: newHistory } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return budgetMsg
+    }
+    if (answer === false) {
+      const closeMsg = buildBudgetLowCloseMessage(nombre)
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", closeMsg)
+      await updateLead(lead.id, {
+        etiqueta_wa: "not_qualified",
+        source_detail: { ...detail, wa_stage: "not_qualified", wa_conversation_history: newHistory } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return closeMsg
+    }
+    // Ambiguo → Claude
   }
 
   // ── Para todas las demás etapas: Claude ──

@@ -383,6 +383,53 @@ export function buildBudgetOptionsMessage(nombre: string | null, range: GuestRan
   ])
 }
 
+export function buildGuestEmotionalMessage(nombre: string | null, range: GuestRange): string {
+  const n = nombre ? `, ${nombre}` : ""
+  const messages: Record<GuestRange, string[]> = {
+    "50-100": [
+      `Una celebración íntima${n} — exactamente el tipo de experiencia donde cada detalle brilla y cada invitado se siente especial. 🌿`,
+      `Las celebraciones íntimas son las más emotivas${n}. Cada persona presente lo vivirá de principio a fin. ✨`,
+      `Qué bonito${n}, una reunión íntima donde el amor se siente en cada rincón. 🤍`,
+    ],
+    "100-150": [
+      `Una celebración con el tamaño perfecto${n} — lo suficientemente grande para que sea memorable, y lo suficientemente íntima para que todos disfruten. 🌿`,
+      `Ese número es ideal${n} para crear una experiencia donde cada detalle tenga su momento. ✨`,
+      `Perfecto${n}, ese rango nos permite diseñar algo muy especial sin que nada se pierda. 🤍`,
+    ],
+    "150-200": [
+      `Una celebración de gran corazón${n} — con esa cantidad podemos crear algo verdaderamente espectacular. ✨`,
+      `Qué emocionante${n}, ese tamaño nos da mucho para trabajar y crear una experiencia inolvidable. 🌿`,
+      `Con ese número de invitados${n} la energía de la celebración se multiplica. ¡Nos encanta! 🤍`,
+    ],
+    "200-250": [
+      `¡Una gran celebración${n}! Con ese número podemos crear algo que deje a todos sin palabras. 🎉`,
+      `Qué emocionante${n} — a esa escala, cada momento se convierte en un recuerdo para toda la vida. ✨`,
+      `Con 200+ invitados${n} la magia de El Romeral se despliega por completo. 🌿`,
+    ],
+    "250-300": [
+      `¡Eso sí es una celebración${n}! A esa escala creamos experiencias que la gente recuerda años después. 🎉`,
+      `Maravilloso${n} — una celebración de esa magnitud merece un equipo a la altura, y eso somos. ✨`,
+      `Con ese número${n} podemos diseñar algo verdaderamente grandioso. Nos entusiasma mucho. 🌿`,
+    ],
+    "300-350": [
+      `¡Extraordinario${n}! Una celebración de esa magnitud es exactamente para lo que estamos hechos. 🎉`,
+      `Wow${n} — a esa escala cada detalle importa y nosotros nos encargamos de todos. Es nuestra especialidad. ✨`,
+      `Una celebración de 300+ personas${n} es un evento que la historia de su familia va a recordar siempre. 🌿`,
+    ],
+  }
+  return pick(messages[range])
+}
+
+export function buildBudgetLowReconsiderMessage(nombre: string | null, guestRange: GuestRange): string {
+  const n = nombre ? `, ${nombre}` : ""
+  const minMedio = BUDGET_RANGES[guestRange].minMedio
+  return pick([
+    `${nombre ?? "Te cuento"}, para ser completamente transparentes${n}: nuestra inversión mínima para una experiencia completa en El Romeral para ese número de invitados es de ${minMedio}. ¿Crees que podrían ajustar un poco el presupuesto? Con eso podríamos hacer algo realmente especial juntos. 🤍 Si no es posible, lo entendemos completamente.`,
+    `Queremos ser honestos contigo${n}: para ese número de invitados, nuestra propuesta integral parte desde ${minMedio}. ¿Existe la posibilidad de acercarse a ese rango? Nos encantaría acompañarlos en esto. ✨ Y si no cuadra, sin ningún problema.`,
+    `Antes de continuar${n}, me gustaría platicarte que para esa cantidad de invitados la inversión mínima en El Romeral es de ${minMedio}. ¿Podrían considerar ese rango? Vale muchísimo la pena, lo que podemos crear juntos es extraordinario. 🌿 Pero si no es posible, aquí seguimos siendo amigos.`,
+  ])
+}
+
 export function buildBudgetLowCloseMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
   return pick([

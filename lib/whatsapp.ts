@@ -10,8 +10,8 @@ export type WaStage =
   | "collect_date"         // captura la fecha
   | "collect_guests"       // rango de invitados
   | "collect_budget"       // rango de inversión
-  | "budget_low_reconsider"// presupuesto bajo → ¿reconsideras?
-  | "not_qualified"        // no reconsideró → fin
+  | "budget_low_reconsider"// presupuesto bajo → ¿puedes ajustar?
+  | "not_qualified"        // no puede ajustar → fin
   | "collect_appointment"  // ¿en línea o que las contactemos?
   | "collect_schedule"     // ¿qué horario prefieren?
   | "calendly_sent"        // link enviado → fin bot
@@ -66,13 +66,13 @@ export interface IncomingWhatsAppMessage {
 }
 
 // ─── Tabla de rangos de inversión por invitados ─────────────────────────────
-export const BUDGET_RANGES: Record<GuestRange, { bajo: string; medio: string; alto: string }> = {
-  "50-100":  { bajo: "menos de $280,000",      medio: "$280,000 – $450,000",  alto: "más de $450,000" },
-  "100-150": { bajo: "menos de $370,000",      medio: "$370,000 – $650,000",  alto: "más de $650,000" },
-  "150-200": { bajo: "menos de $460,000",      medio: "$460,000 – $750,000",  alto: "más de $750,000" },
-  "200-250": { bajo: "menos de $550,000",      medio: "$550,000 – $800,000",  alto: "más de $800,000" },
-  "250-300": { bajo: "menos de $700,000",      medio: "$700,000 – $900,000",  alto: "más de $900,000" },
-  "300-350": { bajo: "menos de $850,000",      medio: "no disponible",        alto: "más de $850,000" },
+export const BUDGET_RANGES: Record<GuestRange, { bajo: string; medio: string; alto: string; minMedio: string }> = {
+  "50-100":  { bajo: "menos de $280,000",      medio: "$280,000 – $450,000",  alto: "más de $450,000",  minMedio: "$280,000" },
+  "100-150": { bajo: "menos de $370,000",      medio: "$370,000 – $650,000",  alto: "más de $650,000",  minMedio: "$370,000" },
+  "150-200": { bajo: "menos de $460,000",      medio: "$460,000 – $750,000",  alto: "más de $750,000",  minMedio: "$460,000" },
+  "200-250": { bajo: "menos de $550,000",      medio: "$550,000 – $800,000",  alto: "más de $800,000",  minMedio: "$550,000" },
+  "250-300": { bajo: "menos de $700,000",      medio: "$700,000 – $900,000",  alto: "más de $900,000",  minMedio: "$700,000" },
+  "300-350": { bajo: "menos de $850,000",      medio: "no disponible",        alto: "más de $850,000",  minMedio: "$850,000" },
 }
 
 export const GUEST_RANGE_LABELS: Record<GuestRange, string> = {
