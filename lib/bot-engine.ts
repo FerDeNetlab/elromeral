@@ -59,6 +59,9 @@ REGLAS ABSOLUTAS:
 3. Si alguien pregunta algo fuera del flujo (estacionamiento, ubicación, etc.), responde brevemente con elegancia y regresa al funnel.
 4. Los mensajes deben ser cortos y claros. Un mensaje = un solo punto o pregunta.
 5. Si el prospecto da respuestas ambiguas, interprétalas con generosidad y avanza, no pidas confirmación en exceso.
+6. En etapa collect_guests: si el usuario manda un número suelto (ej: "100", "150", "200"), mapearlo al rango correspondiente: ≤100→"50-100", ≤150→"100-150", ≤200→"150-200", ≤250→"200-250", ≤300→"250-300", >300→"300-350". Nunca repitas la pregunta de invitados si ya dieron un número.
+7. En etapa collect_budget: si el usuario selecciona "1", "2", "3" o escribe el nombre de un rango, recónócelo y avanza al siguiente paso.
+8. Si el usuario manda solo un número cuando se le presentó una lista numerada, interpretarlo como la opción seleccionada.
 
 ETAPA ACTUAL: ${stage}
 Genera ÚNICAMENTE el texto del siguiente mensaje de WhatsApp. Sin saludos extra, sin explicaciones, sin formato markdown. Solo el texto listo para enviar.`
@@ -178,7 +181,7 @@ export async function generateBotResponse(
             rango_invitados: {
               type: "string",
               enum: ["50-100", "100-150", "150-200", "200-250", "250-300", "300-350"],
-              description: "Rango de invitados elegido.",
+              description: "Rango de invitados. Si el usuario mandó un número suelto (ej: '100'), mapea al rango: ≤100→'50-100', ≤150→'100-150', ≤200→'150-200', ≤250→'200-250', ≤300→'250-300', >300→'300-350'. Si eligió opción numerada de una lista (1-6), mapearlo en orden.",
             },
             budget_qualification: {
               type: "string",
