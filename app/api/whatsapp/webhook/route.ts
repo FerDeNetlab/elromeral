@@ -276,13 +276,11 @@ async function runFunnel(
   if (ex.rango_invitados) {
     ;(patch.source_detail as WaSourceDetail).wa_rango_invitados = ex.rango_invitados
     patch.num_invitados = guestRangeToApprox(ex.rango_invitados)
-    // Si Claude avanza a collect_budget, generamos la tabla de inversión nosotros
-    if (nextStage === "collect_budget") {
-      const budgetMsg = buildBudgetOptionsMessage(ex.nombre ?? nombre, ex.rango_invitados)
-      ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_budget"
-      await updateLead(lead.id, patch)
-      return budgetMsg
-    }
+    // Si tenemos rango de invitados, SIEMPRE avanzar a collect_budget
+    const budgetMsg = buildBudgetOptionsMessage(ex.nombre ?? nombre, ex.rango_invitados)
+    ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_budget"
+    await updateLead(lead.id, patch)
+    return budgetMsg
   }
 
   if (ex.budget_qualification) {
