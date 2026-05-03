@@ -17,7 +17,7 @@ import {
 import {
   buildAdvisorNotifiedMessage,
   buildAvailabilityMessage,
-  buildBudgetLowReconsiderMessage,
+  buildBudgetLowCloseMessage,
   buildBudgetOptionsMessage,
   buildBudgetQualifiedMessage,
   buildCalendlyMessage,
@@ -406,10 +406,11 @@ async function runFunnel(
       }
 
       if (qualification === "bajo") {
-        const reconsiderMsg = buildBudgetLowReconsiderMessage(nombre)
-        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "budget_low_reconsider"
+        const closeMsg = buildBudgetLowCloseMessage(nombre)
+        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "not_qualified"
+        ;(basePatch as Record<string, unknown>).etiqueta_wa = "not_qualified"
         await updateLead(lead.id, basePatch)
-        return reconsiderMsg
+        return closeMsg
       } else {
         const qualMsg = buildBudgetQualifiedMessage(nombre)
         ;(basePatch.source_detail as WaSourceDetail).wa_stage = "collect_appointment"
@@ -423,33 +424,6 @@ async function runFunnel(
     const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", clarify.text)
     await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
     return clarify.text
-  }
-
-  // ── BUDGET_LOW_RECONSIDER: parser determinístico ──
-  if (stage === "budget_low_reconsider") {
-    const answer = parseYesNo(userMessage)
-    if (answer === true) {
-      const guestRange = detail.wa_rango_invitados ?? "150-200"
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", "→reconsider")
-      await updateLead(lead.id, {
-        reconsidero_presupuesto: true,
-        source_detail: { ...detail, wa_stage: "collect_budget", wa_conversation_history: newHistory } as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      })
-      return buildBudgetOptionsMessage(nombre, guestRange)
-    }
-    if (answer === false) {
-      const byeMsg = buildNotQualifiedMessage(nombre)
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", byeMsg)
-      await updateLead(lead.id, {
-        reconsidero_presupuesto: false,
-        etiqueta_wa: "not_qualified",
-        source_detail: { ...detail, wa_stage: "not_qualified", wa_conversation_history: newHistory } as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      })
-      return byeMsg
-    }
-    // Ambiguo → Claude
   }
 
   // ── Para todas las demás etapas: Claude ──
