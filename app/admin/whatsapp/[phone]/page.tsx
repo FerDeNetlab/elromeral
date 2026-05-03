@@ -174,13 +174,15 @@ export default function WhatsAppChatPage({ params }: { params: Promise<{ phone: 
   return (
     <AdminLayout currentPage="whatsapp">
       {/* Layout split: lista izquierda (oculta en móvil) + chat derecha */}
-      <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
+      <div className="flex flex-col lg:flex-row overflow-hidden" style={{ height: "100dvh" }}>
 
         {/* ── Panel de chat ── */}
         <div className="flex-1 flex flex-col min-h-0 bg-white">
 
-          {/* Header del chat */}
-          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white">
+          {/* Header del chat — respeta safe area top (Dynamic Island) */}
+          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white"
+            style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}
+          >
             <Link
               href="/admin/whatsapp"
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
@@ -238,8 +240,10 @@ export default function WhatsAppChatPage({ params }: { params: Promise<{ phone: 
             <div ref={bottomRef} />
           </div>
 
-          {/* Input de respuesta */}
-          <div className="flex-shrink-0 px-4 py-3 bg-white border-t border-gray-200">
+          {/* Input de respuesta — respeta safe area bottom (home bar) */}
+          <div className="flex-shrink-0 px-4 bg-white border-t border-gray-200"
+            style={{ paddingTop: "12px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+          >
             <div className="flex items-end gap-2">
               <textarea
                 ref={inputRef}

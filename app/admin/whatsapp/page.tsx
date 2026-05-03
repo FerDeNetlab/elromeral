@@ -126,9 +126,11 @@ export default function WhatsAppInboxPage() {
 
   return (
     <AdminLayout currentPage="whatsapp">
-      <div className="h-screen flex flex-col bg-[#f8f8f6]">
+      <div className="flex flex-col bg-[#f8f8f6]" style={{ height: "100dvh" }}>
         {/* Header */}
-        <div className="flex-shrink-0 px-4 sm:px-6 py-4 bg-white border-b border-gray-200">
+        <div className="flex-shrink-0 px-4 sm:px-6 pb-4 bg-white border-b border-gray-200"
+          style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}
+        >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <MessageSquare className="w-6 h-6 text-emerald-600" />
