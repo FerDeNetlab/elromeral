@@ -17,9 +17,14 @@ import {
 import {
   buildAdvisorNotifiedMessage,
   buildAvailabilityMessage,
+  buildBudgetLowReconsiderMessage,
   buildBudgetOptionsMessage,
+  buildBudgetQualifiedMessage,
   buildCalendlyMessage,
+  buildCollectDateMessage,
+  buildCollectGuestsMessage,
   buildNeedsHumanMessage,
+  buildNotQualifiedMessage,
   buildWelcomeMessage,
   checkDateAvailability,
   extractDateFromText,
@@ -27,9 +32,13 @@ import {
 } from "@/lib/bot-engine"
 import {
   classifyBudget,
+  detectDateHint,
   parseBudgetOption,
+  parseCalendlyIntent,
+  parseEventType,
   parseGuestRangeFromText,
   parseMXNAmount,
+  parseScheduleHint,
   parseYesNo,
 } from "@/lib/parse-wa-input"
 
@@ -193,6 +202,8 @@ async function notifyAdvisor(lead: WaLeadData): Promise<void> {
   })
 }
 
+const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
+
 // ─── Motor principal del funnel ───────────────────────────────────────────────
 async function runFunnel(
   lead: WaLeadData,
@@ -220,6 +231,107 @@ async function runFunnel(
       wa_last_message_at: new Date().toISOString(),
     })
     return welcomeText
+  }
+
+  // ── COLLECT_EVENT_TYPE: parser determinístico ──
+  if (stage === "collect_event_type") {
+    const eventType = parseEventType(userMessage)
+    if (eventType) {
+      const isHuman = eventType === "corporativo" || eventType === "social"
+      const nextSt: WaStage = isHuman ? "needs_human" : "collect_date_yn"
+      const msg = isHuman ? buildNeedsHumanMessage(nombre) : pick([
+        `Qué emocionante${nombre ? `, ${nombre}` : ""} 🤍 ¿Ya tienen una fecha tentativa para su celebración?`,
+        `¡Perfecto${nombre ? `, ${nombre}` : ""}! ¿Ya tienen alguna fecha en mente para ese gran día?`,
+        `Maravilloso${nombre ? `, ${nombre}` : ""} ✨ ¿Cuentan ya con una fecha tentativa?`,
+      ])
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      const patch: Record<string, unknown> = {
+        tipo_evento: eventType,
+        source_detail: { ...detail, wa_stage: nextSt, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      }
+      if (isHuman) patch.etiqueta_wa = "needs_human"
+      await updateLead(lead.id, patch)
+      if (isHuman) await notifyAdvisor({ ...lead, ...patch } as WaLeadData)
+      return msg
+    }
+    // No entendió → Claude
+  }
+
+  // ── COLLECT_DATE_YN: parser determinístico ──
+  if (stage === "collect_date_yn") {
+    const yn = parseYesNo(userMessage)
+    // Dieron la fecha directamente (ej: "el 15 de septiembre")
+    if (yn !== false && detectDateHint(userMessage)) {
+      const fechaISO = await extractDateFromText(userMessage)
+      if (fechaISO) {
+        const available = await checkDateAvailability(fechaISO)
+        const msg = buildAvailabilityMessage(nombre, available, fechaISO)
+        const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+        await updateLead(lead.id, {
+          source_detail: { ...detail, wa_stage: "collect_guests", wa_tiene_fecha: true, wa_fecha_texto: userMessage, wa_fecha_iso: fechaISO, wa_disponible: available, wa_conversation_history: newHist } as WaSourceDetail,
+          wa_last_message_at: new Date().toISOString(),
+        })
+        return msg
+      }
+      // Detectó hint pero no pudo extraer → pedir fecha explícita
+      const askMsg = buildCollectDateMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askMsg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_date", wa_tiene_fecha: true, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return askMsg
+    }
+    if (yn === true) {
+      const askMsg = buildCollectDateMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askMsg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_date", wa_tiene_fecha: true, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return askMsg
+    }
+    if (yn === false) {
+      const guestMsg = buildCollectGuestsMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", guestMsg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_guests", wa_tiene_fecha: false, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return guestMsg
+    }
+    // Ambiguo → Claude
+  }
+
+  // ── COLLECT_APPOINTMENT: parsers rápidos antes de Claude ──
+  if (stage === "collect_appointment") {
+    if (parseCalendlyIntent(userMessage)) {
+      const msg = buildCalendlyMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, {
+        calificacion_lead: lead.calificacion_lead,
+        etiqueta_wa: "calendly_sent",
+        source_detail: { ...detail, wa_stage: "calendly_sent", wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      await notifyAdvisor(lead)
+      return msg
+    }
+    const schedule = parseScheduleHint(userMessage)
+    if (schedule) {
+      const msg = buildAdvisorNotifiedMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, {
+        horario_preferido: schedule,
+        etiqueta_wa: "advisor_notified",
+        source_detail: { ...detail, wa_stage: "advisor_notified", wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      await notifyAdvisor(lead)
+      return msg
+    }
+    // No detectó horario ni Calendly → Claude maneja la conversación
   }
 
   // ── COLLECT_GUESTS: parser determinístico, sin depender de Claude ──
@@ -265,14 +377,15 @@ async function runFunnel(
       }
 
       if (qualification === "bajo") {
-        const reconsiderMsg = `Entendemos perfectamente, ${nombre ?? ""}. Antes de continuar, ¿les gustaría conocer qué incluye una propuesta más completa? A veces hay opciones que sorprenden 😊`
+        const reconsiderMsg = buildBudgetLowReconsiderMessage(nombre)
         ;(basePatch.source_detail as WaSourceDetail).wa_stage = "budget_low_reconsider"
         await updateLead(lead.id, basePatch)
         return reconsiderMsg
       } else {
+        const qualMsg = buildBudgetQualifiedMessage(nombre)
         ;(basePatch.source_detail as WaSourceDetail).wa_stage = "collect_appointment"
         await updateLead(lead.id, basePatch)
-        return `¡Excelente${nombre ? `, ${nombre}` : ""}! Con esa visión podemos diseñar algo verdaderamente especial. 🤍\n\n¿Cuándo les gustaría visitar El Romeral? Puede ser entre semana o fin de semana — indícanos qué horario les acomoda mejor.`
+        return qualMsg
       }
     }
 
@@ -297,7 +410,7 @@ async function runFunnel(
       return buildBudgetOptionsMessage(nombre, guestRange)
     }
     if (answer === false) {
-      const byeMsg = `Gracias por considerarnos${nombre ? `, ${nombre}` : ""}. Si en el futuro sus planes cambian, aquí estaremos con gusto. 🤍`
+      const byeMsg = buildNotQualifiedMessage(nombre)
       const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", byeMsg)
       await updateLead(lead.id, {
         reconsidero_presupuesto: false,

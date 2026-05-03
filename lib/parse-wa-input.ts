@@ -132,3 +132,68 @@ export function parseYesNo(text: string): boolean | null {
   if (/^(no\b|nel|nope|negativo|para nada|tampoco|no\s+gracias|no\s+por\s+ahora)/.test(clean)) return false
   return null
 }
+
+// ─── Tipo de evento ───────────────────────────────────────────────────────────
+
+/**
+ * Parsea tipo de evento desde texto libre.
+ */
+export type EventType = "boda" | "xv_anos" | "bautizo" | "corporativo" | "social"
+
+export function parseEventType(text: string): EventType | null {
+  const clean = text.toLowerCase().trim()
+  if (/\bboda\b|casarnos|casamiento|matrimonio|wedding/.test(clean)) return "boda"
+  if (/\bxv\b|quince|quincea[ñn]era|15\s*a[ñn]os/.test(clean)) return "xv_anos"
+  if (/\bbautizo\b|bautismo/.test(clean)) return "bautizo"
+  if (/\bcorporativo\b|\bempresa\b|negocio|congreso|convenci[oó]n/.test(clean)) return "corporativo"
+  if (/\bsocial\b|graduaci[oó]n|aniversario|cumplea[ñn]os|reuni[oó]n|familiar/.test(clean)) return "social"
+  return null
+}
+
+// ─── Fechas ───────────────────────────────────────────────────────────────────
+
+/**
+ * Detecta si el texto contiene un hint de fecha (mes, año, formato numérico).
+ */
+export function detectDateHint(text: string): boolean {
+  const clean = text.toLowerCase()
+  const hasMonth = /enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/.test(clean)
+  const hasYear = /20(2[5-9]|3\d)/.test(clean)
+  const hasNumericDate = /\b\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?\b/.test(clean)
+  return hasMonth || hasYear || hasNumericDate
+}
+
+// ─── Cita / appointment ───────────────────────────────────────────────────────
+
+/**
+ * Detecta si el texto menciona un horario o día (para collect_appointment).
+ * Retorna el texto original si encontró algo.
+ */
+export function parseScheduleHint(text: string): string | null {
+  const clean = text.toLowerCase()
+  const patterns = [
+    /ma[ñn]ana/,
+    /tarde/,
+    /fin\s*de\s*semana/,
+    /s[áa]bado/,
+    /domingo/,
+    /\b(lunes|martes|mi[eé]rcoles|jueves|viernes)\b/,
+    /entre\s*semana/,
+    /\d{1,2}\s*(am|pm|hrs?)/,
+    /por\s+la\s+(ma[ñn]ana|tarde|noche)/,
+    /cualquier\s*(d[ií]a|momento|horario)/,
+    /cuando\s*(puedan|gusten|sea|les|quieran)/,
+  ]
+  for (const p of patterns) {
+    if (p.test(clean)) return text.trim()
+  }
+  return null
+}
+
+/**
+ * Detecta si el usuario quiere agendar por Calendly / en línea.
+ */
+export function parseCalendlyIntent(text: string): boolean {
+  const clean = text.toLowerCase()
+  return /calendly|en\s*l[ií]nea|link|liga|p[áa]gina|online|yo\s*mismo|por\s*m[ií]\b/.test(clean)
+}

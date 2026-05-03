@@ -13,6 +13,11 @@ import {
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// ─── Selección aleatoria de variante ────────────────────────────────────────
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
 // ─── System prompt del bot ───────────────────────────────────────────────────
 function buildSystemPrompt(lead: WaLeadData): string {
   const nombre = lead.nombres && !lead.nombres.startsWith("Lead WhatsApp") ? lead.nombres : null
@@ -315,36 +320,112 @@ export async function generateBotResponse(
   }
 }
 
-// ─── Mensajes de bienvenida y acciones fijas ─────────────────────────────────
+// ─── Mensajes del funnel con variantes ──────────────────────────────────────
 export function buildWelcomeMessage(): string {
-  return `Hola ✨ ¡Gracias por escribir a El Romeral – Diseño de Experiencias Integrales!\n\nSoy Romeo, y estoy aquí para ayudarte a diseñar una celebración extraordinaria. Más que un lugar, somos un equipo completo que coordina y resuelve cada detalle de principio a fin. 🤍\n\nPara atenderte como mereces, ¿me compartes tu nombre?`
+  return pick([
+    `Hola ✨ ¡Gracias por escribir a El Romeral!\n\nSoy Romeo, y estoy aquí para ayudarte a diseñar una celebración extraordinaria. Somos un equipo completo que coordina y resuelve cada detalle de principio a fin. 🤍\n\nPara comenzar, ¿me compartes tu nombre?`,
+    `¡Hola! Bienvenido a El Romeral – Diseño de Experiencias Integrales. 🌿\n\nSoy Romeo. Aquí no rentamos espacios — diseñamos celebraciones completas, de principio a fin.\n\n¿Con quién tengo el gusto de hablar?`,
+    `Hola, ¡qué gusto que nos escribas! ✨\n\nSoy Romeo, asistente de El Romeral. Estamos aquí para ayudarte a crear una experiencia que se recuerde para siempre.\n\n¿Me dices tu nombre para comenzar?`,
+  ])
 }
 
-export function buildAvailabilityMessage(nombre: string | null, available: boolean, fecha: string): string {
-  const n = nombre ?? ""
+export function buildCollectDateMessage(nombre: string | null): string {
+  const n = nombre ? `, ${nombre}` : ""
+  return pick([
+    `Perfecto${n}. ¿Cuál es la fecha que tienen en mente? Puede ser aproximada, la verificamos al instante. 📅`,
+    `¿Qué fecha tienen contemplada${n}? Con eso verificamos disponibilidad de inmediato.`,
+    `¡Genial${n}! Cuéntame la fecha que están pensando y la revisamos juntos. 📅`,
+  ])
+}
+
+export function buildCollectGuestsMessage(nombre: string | null): string {
+  const n = nombre ? `, ${nombre}` : ""
+  const lista = `\n\n1️⃣ 50 – 100\n2️⃣ 100 – 150\n3️⃣ 150 – 200\n4️⃣ 200 – 250\n5️⃣ 250 – 300\n6️⃣ 300 – 350`
+  return pick([
+    `Sin problema${n}. ¿Aproximadamente cuántos invitados contemplan?${lista}`,
+    `Perfecto${n}. Para orientarte mejor, ¿cuántas personas asistirán aproximadamente?${lista}`,
+    `Entendido${n}. ¿Qué número de invitados tienen en mente?${lista}`,
+  ])
+}
+
+export function buildAvailabilityMessage(nombre: string | null, available: boolean, _fecha: string): string {
+  const n = nombre ? `, ${nombre}` : ""
+  const lista = `\n\n1️⃣ 50 – 100\n2️⃣ 100 – 150\n3️⃣ 150 – 200\n4️⃣ 200 – 250\n5️⃣ 250 – 300\n6️⃣ 300 – 350`
   if (available) {
-    return `✨ ¡Buenas noticias${n ? `, ${n}` : ""}! Tenemos opciones disponibles para esa fecha.\n\nCuéntanos, ¿aproximadamente cuántos invitados contemplan?\n\n1️⃣ 50 – 100\n2️⃣ 100 – 150\n3️⃣ 150 – 200\n4️⃣ 200 – 250\n5️⃣ 250 – 300\n6️⃣ 300 – 350`
+    return pick([
+      `✨ ¡Buenas noticias${n}! Tenemos opciones disponibles para esa fecha.\n\nCuéntanos, ¿aproximadamente cuántos invitados contemplan?${lista}`,
+      `Qué emocionante${n} 🤍 Esa fecha tiene disponibilidad.\n\n¿Cuántos invitados estiman para la celebración?${lista}`,
+      `¡Perfecto${n}! Podemos trabajar con esa fecha. ¿Aproximadamente cuántas personas asistirán?${lista}`,
+    ])
   }
-  return `💫 Esa fecha está muy solicitada, pero podemos proponerte alternativas igual de especiales para construir una experiencia inolvidable.\n\nCuéntanos, ¿aproximadamente cuántos invitados contemplan?\n\n1️⃣ 50 – 100\n2️⃣ 100 – 150\n3️⃣ 150 – 200\n4️⃣ 200 – 250\n5️⃣ 250 – 300\n6️⃣ 300 – 350`
+  return pick([
+    `💫 Esa fecha está muy solicitada${n}, pero podemos proponerte alternativas igual de especiales.\n\n¿Aproximadamente cuántos invitados contemplan?${lista}`,
+    `Esa fecha tiene mucha demanda${n}, pero no te preocupes — encontramos la opción perfecta. ¿Cuántos invitados serían?${lista}`,
+    `La agenda en esa fecha está apretada${n}, pero nos encantaría proponer alternativas igualmente hermosas. ¿Cuántos invitados son?${lista}`,
+  ])
 }
 
 export function buildBudgetOptionsMessage(nombre: string | null, range: GuestRange): string {
   const n = nombre ? `, ${nombre}` : ""
   const r = BUDGET_RANGES[range]
-  return `Para orientarte correctamente${n}:\n\n¿Cuál es el rango de inversión estimado para la experiencia completa de su evento?\n\n1️⃣ Rango Bajo — ${r.bajo}\n2️⃣ Rango Medio — ${r.medio}\n3️⃣ Rango Alto — ${r.alto}`
+  const opciones = `\n\n1️⃣ Rango Bajo — ${r.bajo}\n2️⃣ Rango Medio — ${r.medio}\n3️⃣ Rango Alto — ${r.alto}`
+  return pick([
+    `Para orientarte correctamente${n}, ¿en cuál de estos rangos de inversión se encuentran para la experiencia completa?${opciones}`,
+    `Perfecto${n}. Para mostrarte las posibilidades que mejor se adaptan a su visión, ¿en cuál rango de inversión contemplan?${opciones}`,
+    `Cada celebración es única${n}. ¿En qué rango de inversión para la experiencia completa se encuentran?${opciones}`,
+  ])
+}
+
+export function buildBudgetLowReconsiderMessage(nombre: string | null): string {
+  const n = nombre ? `, ${nombre}` : ""
+  return pick([
+    `Entendemos perfectamente${n}. ¿Les gustaría conocer qué incluye una propuesta más completa antes de decidir? A veces hay opciones que sorprenden 😊`,
+    `Lo entendemos${n}. Antes de continuar, ¿les interesaría ver qué se puede lograr con un presupuesto más amplio? Muchas veces cambia la perspectiva. 🤍`,
+    `Claro${n}, cada presupuesto es válido. ¿Podrían considerar conocer una propuesta de mayor valor antes de decidir? Quizás encuentren algo que los enamore. ✨`,
+  ])
+}
+
+export function buildBudgetQualifiedMessage(nombre: string | null): string {
+  const n = nombre ? `, ${nombre}` : ""
+  return pick([
+    `¡Excelente${n}! Con esa visión podemos diseñar algo verdaderamente especial. 🤍\n\n¿Cuándo les gustaría visitar El Romeral? Puede ser entre semana o fin de semana — indícanos qué horario les acomoda mejor.`,
+    `Perfecto${n}, eso nos da muy buena claridad. ✨\n\nNos encantaría invitarlos a conocer El Romeral en persona. ¿Qué horario les queda mejor — mañana, tarde, entre semana o fin de semana?`,
+    `Maravilloso${n}, estamos muy emocionados de acompañarlos en esto. 🌿\n\n¿Cuándo podrían venir a conocernos? Tenemos horarios entre semana y fines de semana.`,
+  ])
+}
+
+export function buildNotQualifiedMessage(nombre: string | null): string {
+  const n = nombre ? `, ${nombre}` : ""
+  return pick([
+    `Gracias por considerarnos${n}. Si en el futuro sus planes cambian, aquí estaremos con gusto. 🤍`,
+    `Lo entendemos perfectamente${n}. Cuando quieran retomar la conversación, aquí estamos. ✨`,
+    `Claro${n}, no hay problema. Si en algún momento sus planes evolucionan, será un placer recibirlos. 🌿`,
+  ])
 }
 
 export function buildCalendlyMessage(nombre: string | null): string {
   const n = nombre ? `${nombre}, ` : ""
-  return `Perfecto, ${n}aquí puedes agendar tu cita personalizada directamente:\n\n📅 ${CALENDLY_URL}\n\nEn la cita conoceremos tu visión, compartiremos ideas y comenzaremos a diseñar algo extraordinario juntos. 🤍`
+  return pick([
+    `Perfecto, ${n}aquí puedes agendar tu cita personalizada:\n\n📅 ${CALENDLY_URL}\n\nEn la cita conoceremos tu visión, compartiremos ideas y comenzaremos a diseñar algo extraordinario juntos. 🤍`,
+    `¡Excelente${nombre ? `, ${nombre}` : ""}! Reserva tu cita aquí:\n\n📅 ${CALENDLY_URL}\n\nEs sin compromiso, y será el primer paso para diseñar la celebración de sus sueños. 🤍`,
+    `Nos emociona mucho conocerlos${nombre ? `, ${nombre}` : ""} 🌿\n\nAgenda tu visita en:\n📅 ${CALENDLY_URL}\n\nAhí resolveremos cada duda y comenzaremos a darle forma a su experiencia.`,
+  ])
 }
 
 export function buildAdvisorNotifiedMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
-  return `Perfecto${n} ✨\n\nUna asesora de El Romeral se pondrá en contacto contigo muy pronto para coordinar tu cita personalizada. 🤍`
+  return pick([
+    `Perfecto${n} ✨\n\nUna asesora de El Romeral se pondrá en contacto contigo muy pronto para coordinar tu cita personalizada. 🤍`,
+    `Listo${n}, ya registramos tu solicitud 🤍\n\nUna de nuestras asesoras te contactará en breve para agendar la visita.`,
+    `¡Anotado${n}! Muy pronto una asesora se comunicará contigo para coordinar los detalles. ✨`,
+  ])
 }
 
 export function buildNeedsHumanMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
-  return `Gracias${n} ✨\n\nEn El Romeral cada evento se diseña de forma personalizada según sus objetivos y necesidades.\n\nUno de nuestros asesores especializados se pondrá en contacto contigo a la brevedad para ayudarte. 🤍`
+  return pick([
+    `Gracias${n} ✨\n\nEn El Romeral cada evento se diseña de forma personalizada. Un asesor especializado se pondrá en contacto contigo a la brevedad. 🤍`,
+    `Claro${n}, para este tipo de evento un asesor puede orientarte mucho mejor. 🌿\n\nPronto alguien del equipo se comunicará contigo personalmente.`,
+    `Perfecto${n}, para esa ocasión nos encanta hacer las cosas a medida. Un asesor te contactará muy pronto. ✨`,
+  ])
 }
