@@ -7,6 +7,7 @@ import {
   type GuestRange,
   type WaLeadData,
   type WaMessage,
+  type WaSourceDetail,
   type WaStage,
 } from "@/lib/whatsapp"
 
