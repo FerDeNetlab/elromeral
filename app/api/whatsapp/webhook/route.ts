@@ -2,6 +2,7 @@ import crypto from "node:crypto"
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { Resend } from "resend"
+import { waitUntil } from "@vercel/functions"
 import {
   appendToHistory,
   extractIncomingMessages,
@@ -362,47 +363,44 @@ export async function GET(request: Request) {
 
 // ─── POST: mensajes entrantes de Meta ────────────────────────────────────────
 export async function POST(request: Request) {
-  // Meta espera 200 rápido — procesamos sin bloquear el response
-  const rawBody  = await request.text()
-  const sig      = request.headers.get("x-hub-signature-256")
+  const rawBody = await request.text()
+  const sig     = request.headers.get("x-hub-signature-256")
   const { appSecret } = getEnv()
 
   if (!verifySignature(rawBody, sig, appSecret)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
   }
 
-  // Responder 200 inmediato a Meta
-  const responsePromise = NextResponse.json({ success: true })
+  // Procesar en background manteniendo la función viva con waitUntil
+  waitUntil(
+    (async () => {
+      try {
+        const payload  = JSON.parse(rawBody)
+        const incoming = extractIncomingMessages(payload)
 
-  // Procesar en background (no await en el response)
-  ;(async () => {
-    try {
-      const payload = JSON.parse(rawBody)
-      const incoming = extractIncomingMessages(payload)
+        for (const msg of incoming) {
+          if (!msg.text) continue
 
-      for (const msg of incoming) {
-        if (!msg.text) continue // ignorar mensajes sin texto (imágenes, stickers, etc.)
+          let lead = await findLeadByPhone(msg.from)
+          if (!lead) {
+            lead = await createLead(msg.from, msg.profileName)
+          }
 
-        let lead = await findLeadByPhone(msg.from)
-        if (!lead) {
-          lead = await createLead(msg.from, msg.profileName)
+          const stage: WaStage = (lead.source_detail as WaSourceDetail)?.wa_stage ?? "welcome"
+
+          const shouldProcess = await logMessage(msg.messageId, msg.from, msg.text, lead.id, "inbound", stage)
+          if (!shouldProcess) continue
+
+          const replyText = await runFunnel(lead, msg.text, msg.from)
+          const updatedLead = await findLeadByPhone(msg.from)
+          const currentStage: WaStage = (updatedLead?.source_detail as WaSourceDetail)?.wa_stage ?? stage
+          await sendAndLog(msg.from, replyText, updatedLead ?? lead, currentStage)
         }
-
-        const stage: WaStage = (lead.source_detail as WaSourceDetail)?.wa_stage ?? "welcome"
-
-        // Idempotencia: si ya procesamos este mensaje, ignorar
-        const shouldProcess = await logMessage(msg.messageId, msg.from, msg.text, lead.id, "inbound", stage)
-        if (!shouldProcess) continue
-
-        const replyText = await runFunnel(lead, msg.text, msg.from)
-        const updatedLead = await findLeadByPhone(msg.from)
-        const currentStage: WaStage = (updatedLead?.source_detail as WaSourceDetail)?.wa_stage ?? stage
-        await sendAndLog(msg.from, replyText, updatedLead ?? lead, currentStage)
+      } catch (err) {
+        console.error("[whatsapp-webhook]", err)
       }
-    } catch (err) {
-      console.error("[whatsapp-webhook]", err)
-    }
-  })()
+    })()
+  )
 
-  return responsePromise
+  return NextResponse.json({ success: true })
 }
