@@ -116,7 +116,7 @@ ETAPA: not_qualified
 ETAPA: collect_appointment
 → Pregunta cómo prefieren coordinar la visita. Presenta dos opciones:
   1️⃣ Agendar en línea (les envías el link de Calendly)
-  2️⃣ Que una asesora los contacte
+  2️⃣ Que un asesor los contacte
 → Si eligen opción 1 o mencionan "link/calendly/en línea" → quiere_calendly=true, siguiente: calendly_sent.
 → Si eligen opción 2 o dicen "asesora/que me contacten" → siguiente: collect_schedule.
 → Si mencionan horario directamente sin elegir modo → siguiente: advisor_notified.
@@ -129,10 +129,10 @@ ETAPA: calendly_sent
 → El sistema ya envió el link de Calendly. Si el prospecto escribe algo, confirma que recibió el link y que puede agendar cuando guste.
 
 ETAPA: advisor_notified
-→ El sistema ya notificó a la asesora. Informa que pronto se pondrán en contacto. Sé cálida y tranquilizadora.
+→ El sistema ya notificó a el asesor. Informa que pronto se pondrán en contacto. Sé cálida y tranquilizadora.
 
 ETAPA: needs_human
-→ Una asesora tomará la conversación. Informa con calidez que alguien los contactará pronto.
+→ Un asesor tomará la conversación. Informa con calidez que alguien los contactará pronto.
 
 ═══════════════════════════════════════
 TABLA DE INVERSIÓN (solo cuando sea relevante)
@@ -442,9 +442,9 @@ export function buildBudgetLowCloseMessage(nombre: string | null): string {
 export function buildBudgetQualifiedMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
   return pick([
-    `¡Excelente${n}! Con esa visión podemos diseñar algo verdaderamente especial. 🤍\n\n¿Cómo prefieren coordinar su visita a El Romeral?\n\n1️⃣ Agendar directamente en línea (les mando el link ahora mismo)\n2️⃣ Que una de nuestras asesoras los contacte`,
-    `Perfecto${n}, eso nos da muy buena claridad. ✨\n\nNos encanta que vengan a conocernos. ¿Como prefieren coordinar la visita?\n\n1️⃣ Me mandan el link para agendar en línea\n2️⃣ Prefiero que me contacte una asesora`,
-    `Maravilloso${n}, estamos muy emocionados de acompañarlos. 🌿\n\n¿Qué les funciona mejor para agendar su visita?\n\n1️⃣ Agendar en línea (les comparto el link)\n2️⃣ Que una asesora los llame`,
+    `¡Excelente${n}! Con esa visión podemos diseñar algo verdaderamente especial. 🤍\n\n¿Cómo prefieren coordinar su visita a El Romeral?\n\n1️⃣ Agendar directamente en línea (les mando el link ahora mismo)\n2️⃣ Que uno de nuestros asesores los contacte`,
+    `Perfecto${n}, eso nos da muy buena claridad. ✨\n\nNos encanta que vengan a conocernos. ¿Como prefieren coordinar la visita?\n\n1️⃣ Me mandan el link para agendar en línea\n2️⃣ Prefiero que me contacte un asesor`,
+    `Maravilloso${n}, estamos muy emocionados de acompañarlos. 🌿\n\n¿Qué les funciona mejor para agendar su visita?\n\n1️⃣ Agendar en línea (les comparto el link)\n2️⃣ Que un asesor los llame`,
   ])
 }
 
@@ -478,9 +478,9 @@ export function buildCalendlyMessage(nombre: string | null): string {
 export function buildAdvisorNotifiedMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
   return pick([
-    `Perfecto${n} ✨\n\nUna asesora de El Romeral se pondrá en contacto contigo muy pronto para coordinar tu cita personalizada. 🤍`,
-    `Listo${n}, ya registramos tu solicitud 🤍\n\nUna de nuestras asesoras te contactará en breve para agendar la visita.`,
-    `¡Anotado${n}! Muy pronto una asesora se comunicará contigo para coordinar los detalles. ✨`,
+    `Perfecto${n} ✨\n\nUn asesor de El Romeral se pondrá en contacto contigo muy pronto para coordinar tu cita personalizada. 🤍`,
+    `Listo${n}, ya registramos tu solicitud 🤍\n\nUno de nuestros asesores te contactará en breve para agendar la visita.`,
+    `¡Anotado${n}! Muy pronto un asesor se comunicará contigo para coordinar los detalles. ✨`,
   ])
 }
 

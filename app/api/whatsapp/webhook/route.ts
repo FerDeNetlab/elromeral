@@ -223,7 +223,7 @@ async function runFunnel(
     return `Gracias por escribir${nombre ? `, ${nombre}` : ""}. Si necesitas algo más, aquí estaremos. 🤍`
   }
   if (stage === "needs_human") {
-    return `Gracias por tu mensaje${nombre ? `, ${nombre}` : ""}. Una asesora te atenderá en breve. 🤍`
+    return `Gracias por tu mensaje${nombre ? `, ${nombre}` : ""}. Un asesor te atenderá en breve. 🤍`
   }
 
   // ── Bienvenida ──
