@@ -15,7 +15,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 // ─── System prompt del bot ───────────────────────────────────────────────────
 function buildSystemPrompt(lead: WaLeadData): string {
   const nombre = lead.nombres && !lead.nombres.startsWith("Lead WhatsApp") ? lead.nombres : null
-  const detail = lead.source_detail ?? {}
+  const detail = (lead.source_detail ?? {}) as WaSourceDetail
   const stage: WaStage = detail.wa_stage ?? "welcome"
 
   const context = [
