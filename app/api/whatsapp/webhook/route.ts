@@ -8,7 +8,6 @@ import {
   extractIncomingMessages,
   generateWhatsAppLeadSlug,
   guestRangeToApprox,
-  parseGuestRange,
   sendWhatsAppTextMessage,
   type WaLeadData,
   type WaMessage,
@@ -26,6 +25,13 @@ import {
   extractDateFromText,
   generateBotResponse,
 } from "@/lib/bot-engine"
+import {
+  classifyBudget,
+  parseBudgetOption,
+  parseGuestRangeFromText,
+  parseMXNAmount,
+  parseYesNo,
+} from "@/lib/parse-wa-input"
 
 // Dar hasta 60s para que Claude + Supabase + WhatsApp API completen
 export const maxDuration = 60
@@ -193,35 +199,118 @@ async function runFunnel(
   userMessage: string,
   phone: string,
 ): Promise<string> {
-  const { accessToken, phoneNumberId } = getEnv()
   const detail = (lead.source_detail ?? {}) as WaSourceDetail
   const stage: WaStage = detail.wa_stage ?? "welcome"
   const history: WaMessage[] = detail.wa_conversation_history ?? []
   const nombre = lead.nombres && !lead.nombres.startsWith("Lead WhatsApp") ? lead.nombres : null
 
-  // Etapas terminales: ignorar mensajes nuevos del bot, respuesta cortés
+  // Etapas terminales
   if (["not_qualified", "calendly_sent", "advisor_notified", "completed"].includes(stage)) {
     return `Gracias por escribir${nombre ? `, ${nombre}` : ""}. Si necesitas algo más, aquí estaremos. 🤍`
   }
-
-  // Etapa needs_human: el bot se detiene, asesora responde manualmente
   if (stage === "needs_human") {
     return `Gracias por tu mensaje${nombre ? `, ${nombre}` : ""}. Una asesora te atenderá en breve. 🤍`
   }
 
-  // ── Bienvenida (primer mensaje) ──
+  // ── Bienvenida ──
   if (stage === "welcome") {
     const welcomeText = buildWelcomeMessage()
-    const newDetail: WaSourceDetail = {
-      ...detail,
-      wa_stage: "collect_name",
-      wa_conversation_history: appendToHistory(history, "assistant", welcomeText),
-    }
-    await updateLead(lead.id, { source_detail: newDetail, wa_last_message_at: new Date().toISOString() })
+    await updateLead(lead.id, {
+      source_detail: { ...detail, wa_stage: "collect_name", wa_conversation_history: appendToHistory(history, "assistant", welcomeText) } as WaSourceDetail,
+      wa_last_message_at: new Date().toISOString(),
+    })
     return welcomeText
   }
 
-  // ── Para todas las demás etapas: Claude genera respuesta y extrae datos ──
+  // ── COLLECT_GUESTS: parser determinístico, sin depender de Claude ──
+  if (stage === "collect_guests") {
+    const guestRange = parseGuestRangeFromText(userMessage)
+    if (guestRange) {
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", "→budget")
+      await updateLead(lead.id, {
+        num_invitados: guestRangeToApprox(guestRange),
+        source_detail: { ...detail, wa_stage: "collect_budget", wa_rango_invitados: guestRange, wa_conversation_history: newHistory } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return buildBudgetOptionsMessage(nombre, guestRange)
+    }
+    // No entendió → Claude pide aclaración
+    const clarify = await generateBotResponse(lead, userMessage, history)
+    const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", clarify.text)
+    await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
+    return clarify.text
+  }
+
+  // ── COLLECT_BUDGET: parser determinístico ──
+  if (stage === "collect_budget") {
+    const guestRange = detail.wa_rango_invitados ?? "150-200"
+
+    // Intentar por opción (1/2/3 o bajo/medio/alto)
+    let qualification = parseBudgetOption(userMessage)
+
+    // Si no, intentar por monto en pesos
+    if (!qualification) {
+      const amount = parseMXNAmount(userMessage)
+      if (amount) {
+        qualification = classifyBudget(amount, guestRange)
+      }
+    }
+
+    if (qualification) {
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", "→qualification")
+      const basePatch = {
+        calificacion_lead: qualification,
+        source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      }
+
+      if (qualification === "bajo") {
+        const reconsiderMsg = `Entendemos perfectamente, ${nombre ?? ""}. Antes de continuar, ¿les gustaría conocer qué incluye una propuesta más completa? A veces hay opciones que sorprenden 😊`
+        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "budget_low_reconsider"
+        await updateLead(lead.id, basePatch)
+        return reconsiderMsg
+      } else {
+        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "collect_appointment"
+        await updateLead(lead.id, basePatch)
+        return `¡Excelente${nombre ? `, ${nombre}` : ""}! Con esa visión podemos diseñar algo verdaderamente especial. 🤍\n\n¿Cuándo les gustaría visitar El Romeral? Puede ser entre semana o fin de semana — indícanos qué horario les acomoda mejor.`
+      }
+    }
+
+    // No entendió → Claude pide aclaración
+    const clarify = await generateBotResponse(lead, userMessage, history)
+    const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", clarify.text)
+    await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
+    return clarify.text
+  }
+
+  // ── BUDGET_LOW_RECONSIDER: parser determinístico ──
+  if (stage === "budget_low_reconsider") {
+    const answer = parseYesNo(userMessage)
+    if (answer === true) {
+      const guestRange = detail.wa_rango_invitados ?? "150-200"
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", "→reconsider")
+      await updateLead(lead.id, {
+        reconsidero_presupuesto: true,
+        source_detail: { ...detail, wa_stage: "collect_budget", wa_conversation_history: newHistory } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return buildBudgetOptionsMessage(nombre, guestRange)
+    }
+    if (answer === false) {
+      const byeMsg = `Gracias por considerarnos${nombre ? `, ${nombre}` : ""}. Si en el futuro sus planes cambian, aquí estaremos con gusto. 🤍`
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", byeMsg)
+      await updateLead(lead.id, {
+        reconsidero_presupuesto: false,
+        etiqueta_wa: "not_qualified",
+        source_detail: { ...detail, wa_stage: "not_qualified", wa_conversation_history: newHistory } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return byeMsg
+    }
+    // Ambiguo → Claude
+  }
+
+  // ── Para todas las demás etapas: Claude ──
   const response = await generateBotResponse(lead, userMessage, history)
   const ex = response.extracted
   const newHistory = appendToHistory(
@@ -230,20 +319,17 @@ async function runFunnel(
     response.text,
   )
 
-  // Determinar siguiente etapa real (puede diferir de lo que Claude sugirió)
   let nextStage: WaStage = ex.next_stage ?? stage
   const patch: Record<string, unknown> = {
     source_detail: { ...detail, wa_stage: nextStage, wa_conversation_history: newHistory } as WaSourceDetail,
     wa_last_message_at: new Date().toISOString(),
   }
 
-  // Procesar datos extraídos por Claude
   if (ex.nombre) patch.nombres = ex.nombre
 
   if (ex.tipo_evento) {
     patch.tipo_evento = ex.tipo_evento
     if (ex.tipo_evento === "corporativo" || ex.tipo_evento === "social") {
-      nextStage = "needs_human"
       const humanMsg = buildNeedsHumanMessage(ex.nombre ?? nombre)
       patch.etiqueta_wa = "needs_human"
       ;(patch.source_detail as WaSourceDetail).wa_stage = "needs_human"
@@ -259,13 +345,11 @@ async function runFunnel(
 
   if (ex.fecha_texto && (stage === "collect_date" || stage === "collect_date_yn")) {
     ;(patch.source_detail as WaSourceDetail).wa_fecha_texto = ex.fecha_texto
-    // Intentar extraer fecha ISO y verificar disponibilidad
     const fechaISO = await extractDateFromText(ex.fecha_texto)
     if (fechaISO) {
       const available = await checkDateAvailability(fechaISO)
       ;(patch.source_detail as WaSourceDetail).wa_fecha_iso = fechaISO
       ;(patch.source_detail as WaSourceDetail).wa_disponible = available
-      // El mensaje de disponibilidad lo generamos nosotros (no Claude) para que sea preciso
       nextStage = "collect_guests"
       ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_guests"
       await updateLead(lead.id, patch)
@@ -273,55 +357,15 @@ async function runFunnel(
     }
   }
 
-  if (ex.rango_invitados) {
-    ;(patch.source_detail as WaSourceDetail).wa_rango_invitados = ex.rango_invitados
-    patch.num_invitados = guestRangeToApprox(ex.rango_invitados)
-    // Si tenemos rango de invitados, SIEMPRE avanzar a collect_budget
-    const budgetMsg = buildBudgetOptionsMessage(ex.nombre ?? nombre, ex.rango_invitados)
-    ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_budget"
-    await updateLead(lead.id, patch)
-    return budgetMsg
-  }
-
-  if (ex.budget_qualification) {
-    patch.calificacion_lead = ex.budget_qualification
-    if (ex.inversion_rango) patch.inversion_rango = ex.inversion_rango
-
-    if (ex.budget_qualification === "bajo") {
-      nextStage = "budget_low_reconsider"
-      ;(patch.source_detail as WaSourceDetail).wa_stage = "budget_low_reconsider"
-    } else {
-      // medio o alto → calificado
-      nextStage = "collect_appointment"
-      ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_appointment"
-    }
-  }
-
-  if (ex.quiere_reconsiderar === false && stage === "budget_low_reconsider") {
-    nextStage = "not_qualified"
-    patch.etiqueta_wa = "not_qualified"
-    ;(patch.source_detail as WaSourceDetail).wa_stage = "not_qualified"
-  }
-
-  if (ex.quiere_reconsiderar === true && stage === "budget_low_reconsider") {
-    nextStage = "collect_budget"
-    ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_budget"
-    await updateLead(lead.id, patch)
-    const guestRange = detail.wa_rango_invitados ?? "150-200"
-    return buildBudgetOptionsMessage(ex.nombre ?? nombre, guestRange)
-  }
-
   if (stage === "collect_appointment") {
     if (ex.quiere_calendly) {
-      nextStage = "calendly_sent"
       patch.etiqueta_wa = "calendly_sent"
       patch.calificacion_lead = lead.calificacion_lead ?? ex.budget_qualification
       ;(patch.source_detail as WaSourceDetail).wa_stage = "calendly_sent"
       await updateLead(lead.id, patch)
       await notifyAdvisor({ ...lead, ...patch } as WaLeadData)
       return buildCalendlyMessage(ex.nombre ?? nombre)
-    } else {
-      nextStage = "advisor_notified"
+    } else if (nextStage === "advisor_notified" || ex.horario_preferido) {
       patch.etiqueta_wa = "advisor_notified"
       if (ex.horario_preferido) patch.horario_preferido = ex.horario_preferido
       ;(patch.source_detail as WaSourceDetail).wa_stage = "advisor_notified"
@@ -331,7 +375,6 @@ async function runFunnel(
     }
   }
 
-  // Actualizar stage final
   ;(patch.source_detail as WaSourceDetail).wa_stage = nextStage
   await updateLead(lead.id, patch)
   return response.text
