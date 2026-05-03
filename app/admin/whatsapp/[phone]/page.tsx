@@ -120,6 +120,18 @@ export default function WhatsAppChatPage({ params }: { params: Promise<{ phone: 
     setSending(true)
     setText("")
 
+    // Agregar mensaje optimísticamente para respuesta inmediata en UI
+    const optimisticMsg: WaMessage = {
+      id: `optimistic-${Date.now()}`,
+      message_id: `optimistic-${Date.now()}`,
+      phone: decodedPhone,
+      direction: "outbound",
+      text: trimmed,
+      wa_stage: null,
+      created_at: new Date().toISOString(),
+    }
+    setMessages((prev) => [...prev, optimisticMsg])
+
     try {
       const res = await fetch("/api/whatsapp/send", {
         method: "POST",
