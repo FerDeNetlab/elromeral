@@ -257,7 +257,7 @@ async function runFunnel(
     ;(patch.source_detail as WaSourceDetail).wa_tiene_fecha = ex.tiene_fecha
   }
 
-  if (ex.fecha_texto) {
+  if (ex.fecha_texto && (stage === "collect_date" || stage === "collect_date_yn")) {
     ;(patch.source_detail as WaSourceDetail).wa_fecha_texto = ex.fecha_texto
     // Intentar extraer fecha ISO y verificar disponibilidad
     const fechaISO = await extractDateFromText(ex.fecha_texto)
