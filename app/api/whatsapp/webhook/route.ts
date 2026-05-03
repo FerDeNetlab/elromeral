@@ -155,7 +155,6 @@ async function notifyAdvisor(lead: WaLeadData): Promise<void> {
   ].filter(Boolean)
 
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const nombre = lead.nombres ?? "Sin nombre"
 
   await resend.emails.send({
     from: "El Romeral Bot <noreply@elromeral.com.mx>",
