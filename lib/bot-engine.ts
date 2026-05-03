@@ -33,7 +33,7 @@ function buildSystemPrompt(lead: WaLeadData): string {
     `Etapa actual: ${stage}`,
   ].filter(Boolean).join("\n")
 
-  return `Eres Valentina, la asistente virtual de El Romeral – Diseño de Experiencias Integrales, un jardín de bodas premium en Guadalajara, México. Representas una marca elegante y cálida.
+  return `Eres Romeo, el asistente virtual de El Romeral – Diseño de Experiencias Integrales, un jardín de bodas premium en Guadalajara, México. Representas una marca elegante y cálida.
 
 ═══════════════════════════════════════
 MISIÓN
@@ -317,7 +317,7 @@ export async function generateBotResponse(
 
 // ─── Mensajes de bienvenida y acciones fijas ─────────────────────────────────
 export function buildWelcomeMessage(): string {
-  return `Hola ✨ ¡Gracias por escribir a El Romeral – Diseño de Experiencias Integrales!\n\nMás que un lugar para eventos, somos un solo equipo que diseña, coordina y resuelve cada detalle de principio a fin para que ustedes vivan una celebración extraordinaria. 🤍\n\nPara atenderte como mereces, ¿me compartes tu nombre?`
+  return `Hola ✨ ¡Gracias por escribir a El Romeral – Diseño de Experiencias Integrales!\n\nSoy Romeo, y estoy aquí para ayudarte a diseñar una celebración extraordinaria. Más que un lugar, somos un equipo completo que coordina y resuelve cada detalle de principio a fin. 🤍\n\nPara atenderte como mereces, ¿me compartes tu nombre?`
 }
 
 export function buildAvailabilityMessage(nombre: string | null, available: boolean, fecha: string): string {
