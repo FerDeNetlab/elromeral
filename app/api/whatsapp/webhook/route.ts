@@ -23,6 +23,7 @@ import {
   buildCalendlyMessage,
   buildCollectDateMessage,
   buildCollectGuestsMessage,
+  buildCollectScheduleMessage,
   buildNeedsHumanMessage,
   buildNotQualifiedMessage,
   buildWelcomeMessage,
@@ -304,13 +305,13 @@ async function runFunnel(
     // Ambiguo → Claude
   }
 
-  // ── COLLECT_APPOINTMENT: parsers rápidos antes de Claude ──
+  // ── COLLECT_APPOINTMENT: ¿en línea o que las contactemos? ──
   if (stage === "collect_appointment") {
-    if (parseCalendlyIntent(userMessage)) {
+    // Opción 1 / Calendly / en línea
+    if (parseCalendlyIntent(userMessage) || /^1$/.test(userMessage.trim())) {
       const msg = buildCalendlyMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
-        calificacion_lead: lead.calificacion_lead,
         etiqueta_wa: "calendly_sent",
         source_detail: { ...detail, wa_stage: "calendly_sent", wa_conversation_history: newHist } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
@@ -318,12 +319,23 @@ async function runFunnel(
       await notifyAdvisor(lead)
       return msg
     }
-    const schedule = parseScheduleHint(userMessage)
-    if (schedule) {
+    // Opción 2 / asesora / que me contacten
+    if (/^2$/.test(userMessage.trim()) || /asesora|contacten|contacte|llamen|llámenme|me\s*contacten|prefer[io]\s*(que|una)|me\s*avisan/.test(userMessage.toLowerCase())) {
+      const msg = buildCollectScheduleMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_schedule", wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return msg
+    }
+    // Mencionaron horario directamente (saltaron la pregunta del cómo)
+    const scheduleInApp = parseScheduleHint(userMessage)
+    if (scheduleInApp) {
       const msg = buildAdvisorNotifiedMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
-        horario_preferido: schedule,
+        horario_preferido: scheduleInApp,
         etiqueta_wa: "advisor_notified",
         source_detail: { ...detail, wa_stage: "advisor_notified", wa_conversation_history: newHist } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
@@ -331,7 +343,24 @@ async function runFunnel(
       await notifyAdvisor(lead)
       return msg
     }
-    // No detectó horario ni Calendly → Claude maneja la conversación
+    // Ambiguo → Claude
+  }
+
+  // ── COLLECT_SCHEDULE: captura horario preferido → asesora ──
+  if (stage === "collect_schedule") {
+    const schedule = parseScheduleHint(userMessage)
+    // Si no detecta horario, igual avanzamos — guardar el texto libre como horario
+    const horario = schedule ?? userMessage.trim()
+    const msg = buildAdvisorNotifiedMessage(nombre)
+    const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+    await updateLead(lead.id, {
+      horario_preferido: horario,
+      etiqueta_wa: "advisor_notified",
+      source_detail: { ...detail, wa_stage: "advisor_notified", wa_conversation_history: newHist } as WaSourceDetail,
+      wa_last_message_at: new Date().toISOString(),
+    })
+    await notifyAdvisor(lead)
+    return msg
   }
 
   // ── COLLECT_GUESTS: parser determinístico, sin depender de Claude ──

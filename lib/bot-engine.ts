@@ -114,9 +114,16 @@ ETAPA: not_qualified
 → Responde con calidez, agradece el interés, no cierres la puerta. Ej: "Gracias por considerarnos, [nombre]. Si en el futuro sus planes cambian, aquí estaremos con gusto."
 
 ETAPA: collect_appointment
-→ Invita a agendar una visita presencial. Menciona que es sin compromiso, que verán el jardín y resolverán todas sus dudas.
+→ Pregunta cómo prefieren coordinar la visita. Presenta dos opciones:
+  1️⃣ Agendar en línea (les envías el link de Calendly)
+  2️⃣ Que una asesora los contacte
+→ Si eligen opción 1 o mencionan "link/calendly/en línea" → quiere_calendly=true, siguiente: calendly_sent.
+→ Si eligen opción 2 o dicen "asesora/que me contacten" → siguiente: collect_schedule.
+→ Si mencionan horario directamente sin elegir modo → siguiente: advisor_notified.
+
+ETAPA: collect_schedule
 → Pregunta qué horario les acomoda mejor (mañana/tarde, entre semana/fin de semana).
-→ Captura el horario preferido en horario_preferido.
+→ Cualquier respuesta que dé → guardar como horario_preferido, siguiente: advisor_notified.
 
 ETAPA: calendly_sent
 → El sistema ya envió el link de Calendly. Si el prospecto escribe algo, confirma que recibió el link y que puede agendar cuando guste.
@@ -254,7 +261,7 @@ export async function generateBotResponse(
                 "welcome", "collect_name", "collect_event_type", "needs_human",
                 "collect_date_yn", "collect_date", "collect_guests", "collect_budget",
                 "budget_low_reconsider", "not_qualified", "collect_appointment",
-                "calendly_sent", "advisor_notified", "completed",
+                "collect_schedule", "calendly_sent", "advisor_notified", "completed",
               ],
             },
             nombre: { type: "string", description: "Nombre completo del prospecto si lo mencionó." },
@@ -388,9 +395,18 @@ export function buildBudgetLowReconsiderMessage(nombre: string | null): string {
 export function buildBudgetQualifiedMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
   return pick([
-    `¡Excelente${n}! Con esa visión podemos diseñar algo verdaderamente especial. 🤍\n\n¿Cuándo les gustaría visitar El Romeral? Puede ser entre semana o fin de semana — indícanos qué horario les acomoda mejor.`,
-    `Perfecto${n}, eso nos da muy buena claridad. ✨\n\nNos encantaría invitarlos a conocer El Romeral en persona. ¿Qué horario les queda mejor — mañana, tarde, entre semana o fin de semana?`,
-    `Maravilloso${n}, estamos muy emocionados de acompañarlos en esto. 🌿\n\n¿Cuándo podrían venir a conocernos? Tenemos horarios entre semana y fines de semana.`,
+    `¡Excelente${n}! Con esa visión podemos diseñar algo verdaderamente especial. 🤍\n\n¿Cómo prefieren coordinar su visita a El Romeral?\n\n1️⃣ Agendar directamente en línea (les mando el link ahora mismo)\n2️⃣ Que una de nuestras asesoras los contacte`,
+    `Perfecto${n}, eso nos da muy buena claridad. ✨\n\nNos encanta que vengan a conocernos. ¿Como prefieren coordinar la visita?\n\n1️⃣ Me mandan el link para agendar en línea\n2️⃣ Prefiero que me contacte una asesora`,
+    `Maravilloso${n}, estamos muy emocionados de acompañarlos. 🌿\n\n¿Qué les funciona mejor para agendar su visita?\n\n1️⃣ Agendar en línea (les comparto el link)\n2️⃣ Que una asesora los llame`,
+  ])
+}
+
+export function buildCollectScheduleMessage(nombre: string | null): string {
+  const n = nombre ? `, ${nombre}` : ""
+  return pick([
+    `Perfecto${n}. ¿Qué horario les acomoda mejor? Por ejemplo: fin de semana, entre semana, mañana o tarde. 📅`,
+    `Con gusto${n}. ¿En qué momento les queda mejor para la visita? Entre semana, fin de semana, mañana o tarde.`,
+    `¡Perfecto${n}! ¿Qué día y horario les va mejor? Tenemos opciones entre semana y fines de semana. 📅`,
   ])
 }
 

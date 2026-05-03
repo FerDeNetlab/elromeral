@@ -12,7 +12,8 @@ export type WaStage =
   | "collect_budget"       // rango de inversión
   | "budget_low_reconsider"// presupuesto bajo → ¿reconsideras?
   | "not_qualified"        // no reconsideró → fin
-  | "collect_appointment"  // ¿cómo agendas?
+  | "collect_appointment"  // ¿en línea o que las contactemos?
+  | "collect_schedule"     // ¿qué horario prefieren?
   | "calendly_sent"        // link enviado → fin bot
   | "advisor_notified"     // asesora notificada → fin bot
   | "completed"            // flujo terminado
