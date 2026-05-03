@@ -386,9 +386,9 @@ export function buildBudgetOptionsMessage(nombre: string | null, range: GuestRan
 export function buildBudgetLowCloseMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
   return pick([
-    `${nombre ?? "Te lo decimos"} con mucho respeto: El Romeral es una propuesta integral premium y la inversión suele estar por encima de lo que nos comentas. No queremos que vengan y se lleven una sorpresa. Si en algún momento sus planes cambian, aquí estaremos con mucho gusto. 🤍`,
-    `Queremos ser honestos contigo${n}: la experiencia que ofrecemos en El Romeral normalmente implica una inversión mayor a la que mencionas. Preferimos decírtelo ahora para no generarte expectativas. Si sus circunstancias cambian, con gusto los atendemos. ✨`,
-    `${nombre ?? "Nos parece importante"} ser transparentes contigo${n}: El Romeral es un servicio premium y la inversión generalmente supera lo que nos indicas. No queremos que vengas y encuentres algo diferente a lo esperado. Cuando sus planes evolucionen, aquí estaremos. 🤍`,
+    `Gracias por tu confianza${n} 🤍 Queremos ser transparentes contigo: El Romeral es una experiencia integral y la inversión suele estar por encima de ese rango. No queremos generarte expectativas que no podamos cumplir. Si en algún momento sus planes cambian, aquí estaremos con mucho gusto. ✨`,
+    `Nos alegra mucho que nos hayas escrito${n}. Para ser honestos, la propuesta que ofrecemos en El Romeral generalmente va más allá de ese presupuesto — y preferimos decírtelo antes que sorprenderte. Cuando el momento sea el indicado, con gusto los atendemos. 🤍`,
+    `Qué gusto conocerte${n} 🌿 Antes de continuar, queremos ser sinceros: nuestra propuesta integral normalmente implica una inversión mayor. Preferimos la honestidad para que puedan tomar la mejor decisión. Si algo cambia, aquí estaremos esperándolos. ✨`,
   ])
 }
 
