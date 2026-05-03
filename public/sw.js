@@ -24,8 +24,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/images/logo-dark.png",
-      badge: "/images/logo-dark.png",
+      icon: "/images/icon-192.png",
+      badge: "/images/icon-192.png",
       tag: "wa-notification",
       renotify: true,
       data: { url: data.url ?? "/admin/whatsapp" },

@@ -41,7 +41,10 @@ export const metadata: Metadata = {
     "el romeral",
   ],
   icons: {
-    icon: "/icon.svg",
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
     apple: "/apple-icon.png",
   },
   openGraph: {
