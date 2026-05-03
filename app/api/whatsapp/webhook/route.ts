@@ -27,6 +27,9 @@ import {
   generateBotResponse,
 } from "@/lib/bot-engine"
 
+// Dar hasta 60s para que Claude + Supabase + WhatsApp API completen
+export const maxDuration = 60
+
 // ─── Env helpers ─────────────────────────────────────────────────────────────
 function getEnv() {
   return {
