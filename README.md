@@ -23,6 +23,16 @@ Configure these in your Vercel project settings:
 | `RESEND_API_KEY` | Resend API key for emails |
 | `ADMIN_SETUP_KEY` | Secret key for admin user creation |
 | `NEXT_PUBLIC_SITE_URL` | Site URL (defaults to `https://elromeral.com.mx`) |
+| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | Verify token used in Meta webhook setup |
+| `WHATSAPP_ACCESS_TOKEN` | Permanent access token for WhatsApp Cloud API |
+| `WHATSAPP_PHONE_NUMBER_ID` | Phone number ID from Meta WhatsApp app |
+| `WHATSAPP_APP_SECRET` | Meta App Secret for webhook signature validation |
+| `WHATSAPP_GRAPH_VERSION` | Optional Graph version (default `v22.0`) |
+| `WHATSAPP_NOTIFY_EMAIL` | Email to receive lead alerts from WhatsApp bot |
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude Sonnet (bot engine) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | VAPID public key for Web Push notifications |
+| `VAPID_PUBLIC_KEY` | VAPID public key (server-side) |
+| `VAPID_PRIVATE_KEY` | VAPID private key (server-side, keep secret) |
 
 ## Getting Started
 

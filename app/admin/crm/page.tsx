@@ -21,6 +21,21 @@ interface Quote {
   current_step: number | null
   is_complete: boolean | null
   is_archived: boolean | null
+  source: string | null
+  calificacion_lead: string | null
+}
+
+const CALIFICACION_BADGE: Record<string, { label: string; className: string }> = {
+  bajo:  { label: "Lead bajo",  className: "bg-red-100 text-red-700" },
+  medio: { label: "Lead medio", className: "bg-amber-100 text-amber-700" },
+  alto:  { label: "Lead alto",  className: "bg-green-100 text-green-700" },
+}
+
+const SOURCE_BADGE: Record<string, { label: string; className: string }> = {
+  web: { label: "Web", className: "bg-slate-100 text-slate-700" },
+  whatsapp: { label: "WhatsApp", className: "bg-emerald-100 text-emerald-700" },
+  planners: { label: "Planner", className: "bg-violet-100 text-violet-700" },
+  manual: { label: "Manual", className: "bg-sky-100 text-sky-700" },
 }
 
 type StatusKey = "nuevo_lead" | "contactado" | "visito" | "cotizado" | "ganado" | "perdido"
@@ -228,6 +243,18 @@ function CRMContent() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 mb-3">
+                        <span
+                          className={`inline-flex px-2 py-1 rounded-md text-xs font-medium ${
+                            SOURCE_BADGE[quote.source || "web"]?.className || "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {SOURCE_BADGE[quote.source || "web"]?.label || "Sin canal"}
+                        </span>
+                        {quote.calificacion_lead && CALIFICACION_BADGE[quote.calificacion_lead] && (
+                          <span className={`inline-flex px-2 py-1 rounded-md text-xs font-medium ${CALIFICACION_BADGE[quote.calificacion_lead].className}`}>
+                            {CALIFICACION_BADGE[quote.calificacion_lead].label}
+                          </span>
+                        )}
                         {quote.fecha_evento && (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-md text-xs text-gray-600">
                             <Calendar className="w-3 h-3" />

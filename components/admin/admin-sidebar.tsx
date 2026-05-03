@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
-import { LogOut, LayoutDashboard, Users, Kanban, Calendar, ChevronRight, Bell, Menu, X, Briefcase, ClipboardList, Package, Wand2, Contact2, FileText } from "lucide-react"
+import { LogOut, LayoutDashboard, Users, Kanban, Calendar, ChevronRight, Bell, Menu, X, Briefcase, ClipboardList, Package, Wand2, Contact2, FileText, MessageSquare } from "lucide-react"
 
 interface AdminSidebarProps {
-  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "productos" | "personalizacion" | "contactos" | "cotizaciones" | "settings"
+  currentPage?: "dashboard" | "crm" | "clientes" | "fechas" | "alertas" | "planners" | "encuestas" | "productos" | "personalizacion" | "contactos" | "cotizaciones" | "settings" | "whatsapp"
 }
 
 export function AdminSidebar({ currentPage }: AdminSidebarProps) {
@@ -23,6 +23,7 @@ export function AdminSidebar({ currentPage }: AdminSidebarProps) {
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { id: "whatsapp", label: "WhatsApp", href: "/admin/whatsapp", icon: MessageSquare },
     { id: "crm", label: "CRM", href: "/admin/crm", icon: Kanban },
     { id: "clientes", label: "Clientes", href: "/admin/clientes", icon: Users },
     { id: "planners", label: "Planners", href: "/admin/planners", icon: Briefcase },
