@@ -153,6 +153,13 @@ export function parseEventType(text: string): EventType | null {
 // ─── Fechas ───────────────────────────────────────────────────────────────────
 
 /**
+ * Detecta si el texto contiene un año explícito (2025-2039).
+ */
+export function dateTextHasYear(text: string): boolean {
+  return /20(2[5-9]|3\d)/.test(text)
+}
+
+/**
  * Detecta si el texto contiene un hint de fecha (mes, año, formato numérico).
  */
 export function detectDateHint(text: string): boolean {

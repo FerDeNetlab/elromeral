@@ -34,6 +34,7 @@ import {
   buildNotQualifiedMessage,
   buildPriceDeflectMessage,
   buildWelcomeMessage,
+  buildAskDateYearMessage,
   checkDateAvailability,
   extractDateFromText,
   generateBotResponse,
@@ -41,6 +42,7 @@ import {
 import {
   classifyBudget,
   detectDateHint,
+  dateTextHasYear,
   parseBudgetOption,
   parseCalendlyIntent,
   parseEventType,
@@ -281,6 +283,16 @@ async function runFunnel(
     const yn = parseYesNo(userMessage)
     // Dieron la fecha directamente (ej: "el 15 de septiembre")
     if (yn !== false && detectDateHint(userMessage)) {
+      // Si la fecha no incluye año, pedirlo antes de extraer
+      if (!dateTextHasYear(userMessage)) {
+        const askYearMsg = buildAskDateYearMessage(nombre, userMessage)
+        const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askYearMsg)
+        await updateLead(lead.id, {
+          source_detail: { ...detail, wa_stage: "collect_date", wa_tiene_fecha: true, wa_fecha_texto: userMessage, wa_conversation_history: newHist } as WaSourceDetail,
+          wa_last_message_at: new Date().toISOString(),
+        })
+        return askYearMsg
+      }
       const fechaISO = await extractDateFromText(userMessage)
       if (fechaISO) {
         const available = await checkDateAvailability(fechaISO)
@@ -320,6 +332,30 @@ async function runFunnel(
       return noDateMsg
     }
     // Ambiguo → Claude
+  }
+
+  // ── COLLECT_DATE: el usuario envía la fecha completa ──
+  if (stage === "collect_date" && detectDateHint(userMessage)) {
+    if (!dateTextHasYear(userMessage)) {
+      const askYearMsg = buildAskDateYearMessage(nombre, userMessage)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askYearMsg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_date", wa_fecha_texto: userMessage, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return askYearMsg
+    }
+    const fechaISO = await extractDateFromText(userMessage)
+    if (fechaISO) {
+      const available = await checkDateAvailability(fechaISO)
+      const msg = buildAvailabilityMessage(nombre, available, fechaISO)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_guests", wa_tiene_fecha: true, wa_fecha_texto: userMessage, wa_fecha_iso: fechaISO, wa_disponible: available, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return msg
+    }
   }
 
   // ── COLLECT_APPOINTMENT: op1=asesor, op2=Calendly ──
@@ -512,6 +548,13 @@ async function runFunnel(
 
   if (ex.fecha_texto && (stage === "collect_date" || stage === "collect_date_yn")) {
     ;(patch.source_detail as WaSourceDetail).wa_fecha_texto = ex.fecha_texto
+    // Si no trae año, preguntar antes de verificar disponibilidad
+    if (!dateTextHasYear(ex.fecha_texto)) {
+      const askYearMsg = buildAskDateYearMessage(ex.nombre ?? nombre, ex.fecha_texto)
+      ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_date"
+      await updateLead(lead.id, patch)
+      return askYearMsg
+    }
     const fechaISO = await extractDateFromText(ex.fecha_texto)
     if (fechaISO) {
       const available = await checkDateAvailability(fechaISO)

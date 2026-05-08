@@ -82,11 +82,11 @@ ETAPA: collect_date
 ETAPA: collect_guests (CRÍTICO)
 → Pregunta cuántos invitados aproximadamente. Muestra las opciones numeradas:
   1️⃣ 50 – 100
-  2️⃣ 100 – 150
-  3️⃣ 150 – 200
-  4️⃣ 200 – 250
-  5️⃣ 250 – 300
-  6️⃣ 300 – 350
+  2️⃣ 101 – 150
+  3️⃣ 151 – 200
+  4️⃣ 201 – 250
+  5️⃣ 251 – 300
+  6️⃣ 301 – 350
 → Si el usuario manda un NÚMERO SUELTO (ej: "100", "150", "200", "250"):
   - ≤100 → rango "50-100"
   - ≤150 → rango "100-150"
@@ -344,22 +344,27 @@ export function buildDateYnMessage(nombre: string | null): string {
 }
 
 export function buildCollectDateMessage(_nombre: string | null): string {
-  return `Perfecto 📅 Compártenos la fecha y revisamos disponibilidad para ti.`
+  return `Perfecto 📅 Compártenos la fecha completa (día, mes y año) y revisamos disponibilidad para ti.`
+}
+
+export function buildAskDateYearMessage(nombre: string | null, dateHint: string): string {
+  const n = nombre ? `, ${nombre}` : ""
+  return `¡Perfecto${n}! 📅 Para revisar disponibilidad, ¿podrías confirmarnos la fecha completa incluyendo el año? Por ejemplo: *${dateHint} de 2026* 😊`
 }
 
 export function buildNoDateMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
-  return `No te preocupes${n} 🤍\n\nMuchas celebraciones extraordinarias comienzan definiendo primero la visión, la experiencia y todo lo que desean vivir ese día.\n\n👉 Cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 100 – 150\n3️⃣ 150 – 200\n4️⃣ 200 – 250\n5️⃣ 250 – 300\n6️⃣ 300 – 350`
+  return `No te preocupes${n} 🤍\n\nMuchas celebraciones extraordinarias comienzan definiendo primero la visión, la experiencia y todo lo que desean vivir ese día.\n\n👉 Cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
 }
 
 export function buildCollectGuestsMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
-  return `Cuéntanos${n}, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 100 – 150\n3️⃣ 150 – 200\n4️⃣ 200 – 250\n5️⃣ 250 – 300\n6️⃣ 300 – 350`
+  return `Cuéntanos${n}, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
 }
 
 export function buildAvailabilityMessage(nombre: string | null, available: boolean, _fecha: string): string {
   const n = nombre ? `, ${nombre}` : ""
-  const lista = `\n\n👉 Ahora cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 100 – 150\n3️⃣ 150 – 200\n4️⃣ 200 – 250\n5️⃣ 250 – 300\n6️⃣ 300 – 350`
+  const lista = `\n\n👉 Ahora cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
   if (available) {
     return `✨ ¡Buenas noticias${n}! Tenemos opciones disponibles para esa fecha.${lista}`
   }
