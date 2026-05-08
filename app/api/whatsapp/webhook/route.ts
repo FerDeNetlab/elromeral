@@ -32,6 +32,7 @@ import {
   buildNeedsHumanMessage,
   buildNoDateMessage,
   buildNotQualifiedMessage,
+  buildPriceDeflectMessage,
   buildWelcomeMessage,
   checkDateAvailability,
   extractDateFromText,
@@ -321,10 +322,10 @@ async function runFunnel(
     // Ambiguo → Claude
   }
 
-  // ── COLLECT_APPOINTMENT: ¿en línea o que las contactemos? ──
+  // ── COLLECT_APPOINTMENT: op1=asesor, op2=Calendly ──
   if (stage === "collect_appointment") {
-    // Opción 1 / Calendly / en línea
-    if (parseCalendlyIntent(userMessage) || /^1$/.test(userMessage.trim())) {
+    // Opción 2 / Calendly / en línea
+    if (parseCalendlyIntent(userMessage) || /^2$/.test(userMessage.trim())) {
       const msg = buildCalendlyMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
@@ -335,8 +336,8 @@ async function runFunnel(
       await notifyAdvisor(lead)
       return msg
     }
-    // Opción 2 / asesora / que me contacten
-    if (/^2$/.test(userMessage.trim()) || /asesora|contacten|contacte|llamen|llámenme|me\s*contacten|prefer[io]\s*(que|una)|me\s*avisan/.test(userMessage.toLowerCase())) {
+    // Opción 1 / asesor contacta
+    if (/^1$/.test(userMessage.trim()) || /asesor|contacten|contacte|llamen|llámenme|me\s*contacten|prefer[io]\s*(que|un)|me\s*avisan/.test(userMessage.toLowerCase())) {
       const msg = buildCollectScheduleMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
@@ -345,7 +346,7 @@ async function runFunnel(
       })
       return msg
     }
-    // Mencionaron horario directamente (saltaron la pregunta del cómo)
+    // Mencionaron horario directamente
     const scheduleInApp = parseScheduleHint(userMessage)
     if (scheduleInApp) {
       const msg = buildAdvisorNotifiedMessage(nombre)
@@ -466,6 +467,14 @@ async function runFunnel(
       return closeMsg
     }
     // Ambiguo → Claude
+  }
+
+  // ── Preguntas de precio/paquetes en cualquier etapa → desviar con copy exacto ──
+  if (/precio|paquete|costo|cuánto|cu[áa]nto|cu[áa]nto sale|renta|tarifa|cotiza|informes|más info|m[áa]s informaci[oó]n/.test(userMessage.toLowerCase())) {
+    const deflectMsg = buildPriceDeflectMessage(nombre)
+    const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", deflectMsg)
+    await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
+    return deflectMsg
   }
 
   // ── Para todas las demás etapas: Claude ──

@@ -154,7 +154,8 @@ REGLAS ABSOLUTAS
 2. Un mensaje = una sola pregunta o punto. Nunca abrumes con mucho texto.
 3. Respuestas ambiguas → interprétalas con generosidad, no pidas confirmación extra.
 4. Si preguntan algo fuera del flujo (ubicación, estacionamiento, etc.) → responde brevemente y regresa al funnel.
-5. Nunca uses markdown, asteriscos, ni formato especial. Solo texto plano + emojis.
+5. Si preguntan por precios, paquetes, costos, renta o más información → usa EXACTAMENTE este copy: "[Nombre], cada celebración en El Romeral se diseña completamente a la medida. Para compartirte ideas reales, opciones correctas y una propuesta alineada a lo que sueñan, lo ideal es una cita personalizada. ✨ ¿Te gustaría agendar?" — luego regresa al funnel.
+6. Nunca uses markdown, asteriscos, ni formato especial. Solo texto plano + emojis.
 6. SIEMPRE avanza el funnel. Nunca te quedes en la misma etapa si ya tienes la info.
 
 ETAPA ACTUAL: ${stage}
@@ -402,6 +403,11 @@ export function buildBudgetLowCloseMessage(nombre: string | null): string {
 export function buildBudgetQualifiedMessage(nombre: string | null): string {
   const n = nombre ? `${nombre}, ` : ""
   return `✨ ${n}con lo que nos compartes creemos que podemos construir algo muy especial para ustedes.\n\nEl siguiente paso ideal es una cita personalizada para conocer su visión, compartir ideas y comenzar a diseñar una experiencia extraordinaria. 🤍\n\n👉 ¿Cómo prefieres agendar?\n\n1️⃣ Que un asesor me contacte\n2️⃣ Agendar por aquí mismo`
+}
+
+export function buildPriceDeflectMessage(nombre: string | null): string {
+  const n = nombre ? `, ${nombre}` : ""
+  return `${nombre ?? "Claro"}, cada celebración en El Romeral se diseña completamente a la medida${n ? "" : ""}.\n\nPara compartirte ideas reales, opciones correctas y una propuesta alineada a lo que sueñan, lo ideal es una cita personalizada. ✨\n\n👉 ¿Te gustaría agendar?`
 }
 
 export function buildCollectScheduleMessage(nombre: string | null): string {
