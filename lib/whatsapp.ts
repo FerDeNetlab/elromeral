@@ -48,6 +48,7 @@ export interface WaSourceDetail {
   wa_fecha_iso?: string
   wa_disponible?: boolean
   wa_rango_invitados?: GuestRange
+  wa_reconsidero?: boolean
   wa_conversation_history?: WaMessage[]
 }
 

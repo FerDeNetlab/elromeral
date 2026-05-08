@@ -395,9 +395,9 @@ export function buildBudgetLowReconsiderMessage(nombre: string | null, _guestRan
 }
 
 export function buildBudgetReconsiderReturnMessage(nombre: string | null, range: GuestRange): string {
-  const n = nombre ? `, ${nombre}` : ""
-  const budgetMsg = buildBudgetOptionsMessage(nombre, range)
-  return `¡Perfecto${n}! 💫\n\nA veces con la visión correcta se descubren posibilidades increíbles.\n\n${budgetMsg}`
+  const n = nombre ? `${nombre}, ` : ""
+  const r = BUDGET_RANGES[range]
+  return `¡Perfecto! 💫\n\n${n}a veces con la visión correcta se descubren posibilidades increíbles.\n\n¿Cuál de estas opciones se acerca más a lo que podrían considerar?\n\n1️⃣ ${r.medio}\n2️⃣ ${r.alto}`
 }
 
 export function buildBudgetLowCloseMessage(nombre: string | null): string {

@@ -442,11 +442,23 @@ async function runFunnel(
   // ── COLLECT_BUDGET: parser determinístico ──
   if (stage === "collect_budget") {
     const guestRange = detail.wa_rango_invitados ?? "150-200"
+    const isReconsider = detail.wa_reconsidero === true
 
     let qualification = parseBudgetOption(userMessage)
+    // Si está en modo reconsideración, remap: opción 1→medio, 2→alto (no hay opción bajo)
+    if (isReconsider && qualification === "bajo") {
+      qualification = null // no valid in reconsider mode, try numeric remap
+    }
+    if (isReconsider) {
+      const trimmed = userMessage.trim()
+      if (/^1$/.test(trimmed)) qualification = "medio"
+      else if (/^2$/.test(trimmed)) qualification = "alto"
+    }
     if (!qualification) {
       const amount = parseMXNAmount(userMessage)
       if (amount) qualification = classifyBudget(amount, guestRange)
+      // En modo reconsiderar, si clasifica bajo, tratar como no entendido
+      if (isReconsider && qualification === "bajo") qualification = null
     }
 
     if (qualification) {
@@ -487,7 +499,7 @@ async function runFunnel(
       const msg = buildBudgetReconsiderReturnMessage(nombre, guestRange)
       const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
-        source_detail: { ...detail, wa_stage: "collect_budget", wa_conversation_history: newHistory } as WaSourceDetail,
+        source_detail: { ...detail, wa_stage: "collect_budget", wa_reconsidero: true, wa_conversation_history: newHistory } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
       })
       return msg
