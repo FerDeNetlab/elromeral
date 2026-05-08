@@ -16,17 +16,21 @@ import {
 } from "@/lib/whatsapp"
 import {
   buildAdvisorNotifiedMessage,
+  buildAfterNameMessage,
   buildAvailabilityMessage,
   buildBudgetLowCloseMessage,
   buildBudgetLowReconsiderMessage,
   buildBudgetOptionsMessage,
   buildBudgetQualifiedMessage,
+  buildBudgetReconsiderReturnMessage,
   buildCalendlyMessage,
   buildCollectDateMessage,
   buildCollectGuestsMessage,
   buildCollectScheduleMessage,
+  buildDateYnMessage,
   buildGuestEmotionalMessage,
   buildNeedsHumanMessage,
+  buildNoDateMessage,
   buildNotQualifiedMessage,
   buildWelcomeMessage,
   checkDateAvailability,
@@ -236,17 +240,27 @@ async function runFunnel(
     return welcomeText
   }
 
+  // ── COLLECT_NAME: cualquier texto = nombre ──
+  if (stage === "collect_name") {
+    const nombre_raw = userMessage.trim().replace(/^(hola|buenas|buenos|hey|hi)\s*/i, "").trim()
+    const nombreDetectado = nombre_raw.length > 0 && nombre_raw.length <= 60 ? nombre_raw : userMessage.trim()
+    const msg = buildAfterNameMessage(nombreDetectado)
+    const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+    await updateLead(lead.id, {
+      nombres: nombreDetectado,
+      source_detail: { ...detail, wa_stage: "collect_event_type", wa_conversation_history: newHist } as WaSourceDetail,
+      wa_last_message_at: new Date().toISOString(),
+    })
+    return msg
+  }
+
   // ── COLLECT_EVENT_TYPE: parser determinístico ──
   if (stage === "collect_event_type") {
     const eventType = parseEventType(userMessage)
     if (eventType) {
       const isHuman = eventType === "corporativo" || eventType === "social"
       const nextSt: WaStage = isHuman ? "needs_human" : "collect_date_yn"
-      const msg = isHuman ? buildNeedsHumanMessage(nombre) : pick([
-        `Qué emocionante${nombre ? `, ${nombre}` : ""} 🤍 ¿Ya tienen una fecha tentativa para su celebración?`,
-        `¡Perfecto${nombre ? `, ${nombre}` : ""}! ¿Ya tienen alguna fecha en mente para ese gran día?`,
-        `Maravilloso${nombre ? `, ${nombre}` : ""} ✨ ¿Cuentan ya con una fecha tentativa?`,
-      ])
+      const msg = isHuman ? buildNeedsHumanMessage(nombre) : buildDateYnMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       const patch: Record<string, unknown> = {
         tipo_evento: eventType,
@@ -296,13 +310,13 @@ async function runFunnel(
       return askMsg
     }
     if (yn === false) {
-      const guestMsg = buildCollectGuestsMessage(nombre)
-      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", guestMsg)
+      const noDateMsg = buildNoDateMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", noDateMsg)
       await updateLead(lead.id, {
         source_detail: { ...detail, wa_stage: "collect_guests", wa_tiene_fecha: false, wa_conversation_history: newHist } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
       })
-      return guestMsg
+      return noDateMsg
     }
     // Ambiguo → Claude
   }
@@ -430,17 +444,18 @@ async function runFunnel(
   if (stage === "budget_low_reconsider") {
     const guestRange = detail.wa_rango_invitados ?? "150-200"
     const answer = parseYesNo(userMessage)
-    if (answer === true) {
-      // Vuelve a mostrar opciones de presupuesto
-      const budgetMsg = buildBudgetOptionsMessage(nombre, guestRange)
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", budgetMsg)
+    const isYes = answer === true || /^1$|reconsider/.test(userMessage.toLowerCase().trim())
+    const isNo = answer === false || /^2$/.test(userMessage.trim())
+    if (isYes) {
+      const msg = buildBudgetReconsiderReturnMessage(nombre, guestRange)
+      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
         source_detail: { ...detail, wa_stage: "collect_budget", wa_conversation_history: newHistory } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
       })
-      return budgetMsg
+      return msg
     }
-    if (answer === false) {
+    if (isNo) {
       const closeMsg = buildBudgetLowCloseMessage(nombre)
       const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", closeMsg)
       await updateLead(lead.id, {
