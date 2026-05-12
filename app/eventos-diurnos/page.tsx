@@ -1123,11 +1123,11 @@ export default function EventosDiurnosPage() {
 
         <div className="flex flex-col md:flex-row gap-6 justify-center items-center text-sm font-light text-muted-foreground">
           <a
-            href="tel:3338708159"
+            href="tel:3336821088"
             className="flex items-center gap-2 hover:text-foreground transition-colors"
           >
             <Phone className="w-4 h-4" />
-            (33) 3870-8159
+            (33) 3682-1088
           </a>
           <span className="hidden md:inline text-muted-foreground/30">·</span>
           <a

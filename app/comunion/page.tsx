@@ -761,7 +761,7 @@ export default function CotizacionDiurnaPage() {
               size="lg"
               className="px-10 py-6 text-sm tracking-widest uppercase"
             >
-              <Link href="https://wa.me/3338708159?text=Hola,%20me%20interesa%20apartar%20una%20fecha%20para%20Primera%20Comunión" target="_blank" rel="noopener noreferrer">
+              <Link href="https://wa.me/523336821088?text=Hola,%20me%20interesa%20apartar%20una%20fecha%20para%20Primera%20Comuni%C3%B3n" target="_blank" rel="noopener noreferrer">
                 Escríbenos por WhatsApp
               </Link>
             </Button>

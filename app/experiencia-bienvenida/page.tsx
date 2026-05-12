@@ -233,7 +233,7 @@ export default function ExperienciaBienvenidaPage() {
         </h3>
         
         <Link
-          href="https://wa.me/3338708159?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20la%20Experiencia%20de%20Bienvenida%20Romeral"
+          href="https://wa.me/523336821088?text=Hola,%20me%20interesa%20conocer%20m%C3%A1s%20sobre%20la%20Experiencia%20de%20Bienvenida%20Romeral"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block bg-primary text-primary-foreground px-12 py-4 text-sm tracking-[0.2em] uppercase font-medium hover:bg-primary/90 transition-colors duration-500"

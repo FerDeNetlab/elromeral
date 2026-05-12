@@ -416,7 +416,7 @@ export default function AdicionalesPerlaAlexisPage() {
           <div className="flex justify-center">
             <Button asChild size="lg" className="px-10 py-6 text-sm tracking-widest uppercase">
               <Link
-                href="https://wa.me/3338708159?text=Hola,%20me%20interesa%20confirmar%20los%20adicionales%20para%20la%20boda%20de%20Perla%20y%20Alexis"
+                href="https://wa.me/523336821088?text=Hola,%20me%20interesa%20confirmar%20los%20adicionales%20para%20la%20boda%20de%20Perla%20y%20Alexis"
                 target="_blank"
                 rel="noopener noreferrer"
               >

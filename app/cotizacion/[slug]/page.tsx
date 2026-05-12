@@ -327,7 +327,7 @@ export default function CotizacionPage() {
                 </span>
               </Button>
               <a
-                href="http://wa.me/3338708159"
+                href="https://wa.me/523336821088"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2.5 h-auto border border-neutral-300 hover:border-green-600 hover:bg-green-50 rounded-md transition-all bg-white text-neutral-700 hover:text-green-700"
