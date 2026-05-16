@@ -116,9 +116,10 @@ export function classifyBudget(amount: number, guestRange: GuestRange): BudgetQu
 export function parseBudgetOption(text: string): BudgetQualification | null {
   const clean = text.toLowerCase().trim()
 
-  if (/^1$|^uno$|\bbajo\b|\bm[aá]s\s*econ[oó]mico\b|\bm[aá]s\s*barato\b/.test(clean)) return "bajo"
+  // "menos de X" o "la primera" / "opción 1" → bajo
+  if (/^1$|^uno$|\bbajo\b|\bm[aá]s\s*econ[oó]mico\b|\bm[aá]s\s*barato\b|\bmenos\s+de\b|\bla\s+primera\b|\bopci[oó]n\s*1\b/.test(clean)) return "bajo"
   if (/^2$|^dos$|\bmedio\b|\bintermedio\b|\bregular\b/.test(clean)) return "medio"
-  if (/^3$|^tres$|\balto\b|\bpremium\b|\bm[aá]s\s*completo\b|\bm[aá]s\s*caro\b/.test(clean)) return "alto"
+  if (/^3$|^tres$|\balto\b|\bpremium\b|\bm[aá]s\s+completo\b|\bm[aá]s\s+caro\b/.test(clean)) return "alto"
 
   return null
 }

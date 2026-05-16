@@ -245,7 +245,12 @@ async function runFunnel(
 
   // ── COLLECT_NAME: cualquier texto = nombre ──
   if (stage === "collect_name") {
-    const nombre_raw = userMessage.trim().replace(/^(hola|buenas|buenos|hey|hi)\s*/i, "").trim()
+    let nombre_raw = userMessage.trim()
+    // Eliminar saludos y frases de presentación
+    nombre_raw = nombre_raw
+      .replace(/^(hola[,.]?|buenas[,.]?|buenos[,.]?|hey[,.]?|hi[,.]?)\s*/i, "")
+      .replace(/^(mi\s+nombre\s+es|me\s+llamo|soy|les\s+habla|les\s+escribe)\s*/i, "")
+      .trim()
     const nombreDetectado = nombre_raw.length > 0 && nombre_raw.length <= 60 ? nombre_raw : userMessage.trim()
     const msg = buildAfterNameMessage(nombreDetectado)
     const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
