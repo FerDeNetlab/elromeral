@@ -33,6 +33,7 @@ import {
   buildNoDateMessage,
   buildNotQualifiedMessage,
   buildPriceDeflectMessage,
+  buildSearchingDateMessage,
   buildWelcomeMessage,
   buildAskDateYearMessage,
   checkDateAvailability,
@@ -300,6 +301,8 @@ async function runFunnel(
       }
       const fechaISO = await extractDateFromText(userMessage)
       if (fechaISO) {
+        const searchMsg = buildSearchingDateMessage()
+        await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: searchMsg })
         const available = await checkDateAvailability(fechaISO)
         const msg = buildAvailabilityMessage(nombre, available, fechaISO)
         const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
@@ -352,6 +355,8 @@ async function runFunnel(
     }
     const fechaISO = await extractDateFromText(userMessage)
     if (fechaISO) {
+      const searchMsg = buildSearchingDateMessage()
+      await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: searchMsg })
       const available = await checkDateAvailability(fechaISO)
       const msg = buildAvailabilityMessage(nombre, available, fechaISO)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
@@ -406,9 +411,17 @@ async function runFunnel(
 
   // ── COLLECT_SCHEDULE: captura horario preferido → asesora ──
   if (stage === "collect_schedule") {
-    const schedule = parseScheduleHint(userMessage)
-    // Si no detecta horario, igual avanzamos — guardar el texto libre como horario
-    const horario = schedule ?? userMessage.trim()
+    const trimmed = userMessage.trim()
+    let horario: string
+    if (trimmed === "1") {
+      horario = "mañana (9:00 – 13:00)"
+    } else if (trimmed === "2") {
+      horario = "tarde (14:00 – 18:00)"
+    } else if (trimmed === "3") {
+      horario = "noche (18:00 – 20:00)"
+    } else {
+      horario = parseScheduleHint(userMessage) ?? trimmed
+    }
     const msg = buildAdvisorNotifiedMessage(nombre)
     const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
     await updateLead(lead.id, {
@@ -574,6 +587,8 @@ async function runFunnel(
     }
     const fechaISO = await extractDateFromText(ex.fecha_texto)
     if (fechaISO) {
+      const searchMsg = buildSearchingDateMessage()
+      await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: searchMsg })
       const available = await checkDateAvailability(fechaISO)
       ;(patch.source_detail as WaSourceDetail).wa_fecha_iso = fechaISO
       ;(patch.source_detail as WaSourceDetail).wa_disponible = available

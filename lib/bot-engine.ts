@@ -362,21 +362,25 @@ export function buildCollectGuestsMessage(nombre: string | null): string {
   return `Cuéntanos${n}, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
 }
 
+export function buildSearchingDateMessage(): string {
+  return `Déjame revisar nuestra agenda para esa fecha... 🗓️`
+}
+
 export function buildAvailabilityMessage(nombre: string | null, available: boolean, _fecha: string): string {
   const n = nombre ? `, ${nombre}` : ""
   const lista = `\n\n👉 Ahora cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
   if (available) {
-    return `✨ ¡Buenas noticias${n}! Tenemos opciones disponibles para esa fecha.${lista}`
+    return `✨ ¡Buenas noticias${n}! Tenemos disponibilidad para esa fecha. ¡Es tuya si la quieres!${lista}`
   }
   return `💫 Esa fecha está muy solicitada${n}, pero podemos proponerte alternativas igual de especiales para construir una experiencia inolvidable.${lista}`
 }
 
 export function buildGuestEmotionalMessage(_nombre: string | null, range: GuestRange): string {
   const messages: Record<GuestRange, string> = {
-    "50-100":  `🤍 Una celebración íntima y elegante.`,
-    "100-150": `✨ El equilibrio ideal entre cercanía y gran ambiente.`,
-    "150-200": `🎉 Una celebración vibrante con muchas posibilidades.`,
-    "200-250": `💫 Un evento memorable para compartir en grande.`,
+    "50-100":  `🤍 Una celebración íntima y elegante, donde cada detalle se siente personal.`,
+    "100-150": `✨ El equilibrio ideal entre cercanía y gran ambiente, sin que nadie se pierda nada.`,
+    "150-200": `🎉 Una celebración vibrante con muchísimas posibilidades creativas.`,
+    "200-250": `💫 Un evento memorable para compartir en grande, donde cada espacio cobra vida.`,
     "250-300": `🤍 Una celebración donde nadie importante se queda fuera y todos pueden vivirla juntos.`,
     "300-350": `✨ Un gran momento para reunir a todos los que forman parte de su historia y disfrutarlo en grande.`,
   }
@@ -417,7 +421,7 @@ export function buildPriceDeflectMessage(nombre: string | null): string {
 
 export function buildCollectScheduleMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
-  return `Perfecto${n} 🤍\n\n¿Qué horario te acomoda mejor para contactarte y coordinar tu cita?`
+  return `Perfecto${n} 🤍\n\n¿Qué horario te acomoda mejor para tu cita?\n\n1️⃣ Mañana (9:00 – 13:00)\n2️⃣ Tarde (14:00 – 18:00)\n3️⃣ Noche (18:00 – 20:00)`
 }
 
 export function buildAdvisorNotifiedMessage(nombre: string | null): string {
