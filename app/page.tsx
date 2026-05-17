@@ -9,6 +9,48 @@ const WebChatBot = lazy(() => import("@/components/web-chat-bot"))
 const WA_LINK =
   "https://wa.me/523336821088?text=Hola%2C%20me%20gustar%C3%ADa%20conocer%20m%C3%A1s%20sobre%20El%20Romeral"
 
+// ── FAQ data (también se usa para FAQPage JSON-LD) ───────────────────────────
+const FAQ_ITEMS = [
+  {
+    q: "¿Qué hace especial a El Romeral como venue para bodas en Guadalajara?",
+    a: "El Romeral es un venue de producción integral. A diferencia de salones convencionales donde se contrata el espacio y los servicios por separado, aquí un único equipo especializado coordina absolutamente todo: diseño de concepto, gastronomía de autor, decoración, iluminación y logística. Los novios solo llegan a vivir su día. Con más de 20 años de experiencia y más de 500 eventos realizados en la Zona Metropolitana de Guadalajara.",
+  },
+  {
+    q: "¿Dónde está ubicado El Romeral?",
+    a: "En Prolongación Av. Vallarta 2951, Colonia El Romeral, Zapopan, Jalisco, México. A aproximadamente 15 minutos del Centro de Guadalajara, con acceso fácil desde la carretera a Nogales y estacionamiento propio para todos los invitados.",
+  },
+  {
+    q: "¿Qué tipos de eventos organiza El Romeral?",
+    a: "Bodas (civiles, religiosas y mixtas), XV años y quinceañeras, bautizos, comuniones y primeras comuniones, eventos corporativos como galas, lanzamientos de producto y cenas de empresa, y eventos diurnos en jardín. La producción integral aplica a todos los tipos de celebración.",
+  },
+  {
+    q: "¿El Romeral incluye servicio de gastronomía propio?",
+    a: "Sí. Contamos con un equipo propio de gastronomía de autor. Ofrecemos menús diseñados a medida: desde tablas de quesos artesanales y bocadillos hasta banquetes de alta cocina, postres de autor con técnica de pastelería profesional y estaciones temáticas personalizadas para cada evento.",
+  },
+  {
+    q: "¿Con cuánta anticipación debo reservar mi evento?",
+    a: "Recomendamos iniciar el proceso con al menos 8 a 12 meses de anticipación, especialmente para fechas en temporada alta (marzo-mayo y octubre-diciembre). Para verificar disponibilidad y apartar tu fecha, escríbenos por WhatsApp al +52 33 3682 1088.",
+  },
+  {
+    q: "¿El Romeral atiende a familias mexicanas que viven en Estados Unidos?",
+    a: "Sí, con mucho gusto. Coordinamos todo el proceso de forma remota vía WhatsApp o videollamada. El proceso de reservación es completamente accesible desde el extranjero. Muchas familias mexicano-americanas eligen El Romeral para celebrar bodas, quinceañeras y bautizos en Guadalajara.",
+  },
+  {
+    q: "¿Cómo puedo obtener una cotización?",
+    a: "Puedes iniciar de tres formas: (1) nuestro cotizador interactivo en elromeral.com.mx/configurador, (2) WhatsApp al +52 33 3682 1088, o (3) email a contacto@elromeral.com.mx. Un asesor especializado diseña una propuesta personalizada sin compromiso.",
+  },
+]
+
+const FAQ_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ_ITEMS.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+}
+
 // --- Nav ---
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
@@ -58,6 +100,48 @@ function Nav() {
         </a>
       </div>
     </>
+  )
+}
+
+// --- FAQSection ---
+function FAQSection() {
+  const [openIdx, setOpenIdx] = useState<number | null>(null)
+
+  return (
+    <section className="lr-faq" id="faq">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
+      />
+      <div className="lr-faq-inner">
+        <div className="lr-reveal" style={{ textAlign: "center" }}>
+          <span className="lr-section-label">Resolvemos tus dudas</span>
+          <h2 className="lr-section-title">Preguntas <em>frecuentes</em></h2>
+        </div>
+        <div className="lr-faq-list lr-reveal">
+          {FAQ_ITEMS.map((item, i) => (
+            <div key={i} className={`lr-faq-item${openIdx === i ? " lr-open" : ""}`}>
+              <button
+                className="lr-faq-q"
+                onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                aria-expanded={openIdx === i}
+              >
+                <span>{item.q}</span>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <line x1="10" y1="4" x2="10" y2="16" className="lr-faq-vline" />
+                  <line x1="4" y1="10" x2="16" y2="10" />
+                </svg>
+              </button>
+              <div className="lr-faq-a" aria-hidden={openIdx !== i}>
+                <div className="lr-faq-a-inner">
+                  <p>{item.a}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -348,6 +432,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* FAQ */}
+      <FAQSection />
 
       {/* FINAL CTA */}
       <section className="lr-final-cta lr-reveal">

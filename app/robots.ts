@@ -1,46 +1,61 @@
 import type { MetadataRoute } from "next"
 
+const PRIVATE_ROUTES = [
+  "/admin/",
+  "/admin/*",
+  "/api/",
+  "/api/*",
+  "/brochure/",
+  "/clientes/",
+  "/encuesta/",
+  "/cot-test/",
+  "/cotizacion/",
+  "/cotizacion-adicionales/",
+  "/cotizacion-personalizada/",
+  "/cotizador-personalizado/",
+  "/adicionales-martha-kevin/",
+  "/adicionales-paty-alex/",
+  "/adicionales-perla-alexis/",
+]
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      // ── Allow public crawlers ─────────────────────────────────────────────
+      // ── Allow all public crawlers (including Googlebot / AI Overview) ──────
       {
         userAgent: "*",
         allow: ["/"],
-        disallow: [
-          // Admin & internal tooling
-          "/admin/",
-          "/admin/*",
-          // API routes
-          "/api/",
-          "/api/*",
-          // Private client-facing pages
-          "/brochure/",
-          "/clientes/",
-          "/encuesta/",
-          "/cot-test/",
-          // Quote/sales flows (private)
-          "/cotizacion/",
-          "/cotizacion-adicionales/",
-          "/cotizacion-personalizada/",
-          "/cotizador-personalizado/",
-          // Addon pages (internal)
-          "/adicionales-martha-kevin/",
-          "/adicionales-paty-alex/",
-          "/adicionales-perla-alexis/",
-        ],
+        disallow: PRIVATE_ROUTES,
       },
-      // ── Block AI training crawlers ────────────────────────────────────────
+      // ── Explicitly allow AI ANSWER engines ───────────────────────────────
+      // These power ChatGPT browsing, Perplexity, Claude answers, Bing Copilot.
+      // Allowing them makes El Romeral citable when users ask about venues.
       {
         userAgent: [
-          "GPTBot",
-          "ChatGPT-User",
-          "CCBot",
-          "anthropic-ai",
-          "Claude-Web",
-          "Omgilibot",
-          "FacebookBot",
-          "Bytespider",
+          "GPTBot",          // ChatGPT web browsing
+          "ChatGPT-User",    // ChatGPT plugins
+          "OAI-SearchBot",   // OpenAI search index
+          "anthropic-ai",    // Claude (Anthropic)
+          "ClaudeBot",       // Claude (Anthropic, newer)
+          "PerplexityBot",   // Perplexity.ai
+          "YouBot",          // You.com AI search
+          "cohere-ai",       // Cohere
+        ],
+        allow: ["/"],
+        disallow: PRIVATE_ROUTES,
+      },
+      // ── Block AI TRAINING scrapers (not answer engines) ───────────────────
+      // These scrape content to build training datasets, not to answer queries.
+      {
+        userAgent: [
+          "CCBot",               // Common Crawl (training data)
+          "Bytespider",          // TikTok / ByteDance
+          "FacebookBot",         // Meta training
+          "meta-externalagent",  // Meta training (newer)
+          "Omgilibot",           // Training scraper
+          "DataForSeoBot",       // SEO scraper
+          "AhrefsBot",           // SEO scraper
+          "SemrushBot",          // SEO scraper
         ],
         disallow: ["/"],
       },
