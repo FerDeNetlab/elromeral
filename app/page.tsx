@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect, useRef, lazy, Suspense } from "react"
 import "@/styles/landing.css"
+import { trackWhatsAppClick, trackWebchatOpen, trackFaqOpen } from "@/lib/gtm"
 
 const WebChatBot = lazy(() => import("@/components/web-chat-bot"))
 
@@ -78,7 +79,8 @@ function Nav() {
             <li key={l.href}><a href={l.href}>{l.label}</a></li>
           ))}
         </ul>
-        <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-nav-cta lr-desktop">
+        <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-nav-cta lr-desktop"
+           onClick={() => trackWhatsAppClick("nav")}>
           Iniciar mi experiencia
         </a>
         <button className="lr-hamburger" onClick={() => setMobileOpen(true)} aria-label="Abrir menú">
@@ -95,7 +97,8 @@ function Nav() {
           <a key={l.href} href={l.href} onClick={() => setMobileOpen(false)}>{l.label}</a>
         ))}
         <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary"
-           onClick={() => setMobileOpen(false)} style={{ textAlign: "center", marginTop: 16 }}>
+           onClick={() => { setMobileOpen(false); trackWhatsAppClick("nav_mobile") }}
+           style={{ textAlign: "center", marginTop: 16 }}>
           Iniciar mi experiencia
         </a>
       </div>
@@ -123,7 +126,10 @@ function FAQSection() {
             <div key={i} className={`lr-faq-item${openIdx === i ? " lr-open" : ""}`}>
               <button
                 className="lr-faq-q"
-                onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                onClick={() => {
+                  setOpenIdx(openIdx === i ? null : i)
+                  if (openIdx !== i) trackFaqOpen(item.q)
+                }}
                 aria-expanded={openIdx === i}
               >
                 <span>{item.q}</span>
@@ -157,7 +163,7 @@ function FloatingWhatsApp() {
           <div className="fixed inset-0 z-[68]" onClick={() => setOpen(false)} />
           <div className="fixed bottom-24 right-6 z-[69] flex flex-col gap-2"
                style={{ animation: "waPopup .22s cubic-bezier(.4,0,.2,1) forwards" }}>
-            <button onClick={() => { setOpen(false); setChatOpen(true) }}
+            <button onClick={() => { setOpen(false); setChatOpen(true); trackWebchatOpen() }}
               className="flex items-center gap-3 bg-white/95 backdrop-blur-sm border border-black/10 shadow-xl px-4 py-3 text-left hover:bg-amber-50 transition-colors duration-200"
               style={{ borderRadius: 12, minWidth: 220 }}>
               <span className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 text-sm">💬</span>
@@ -166,7 +172,8 @@ function FloatingWhatsApp() {
                 <div className="text-[10px] text-gray-500">Chat en el sitio</div>
               </div>
             </button>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}
+            <a href={WA_LINK} target="_blank" rel="noopener noreferrer"
+               onClick={() => { setOpen(false); trackWhatsAppClick("floating_wa") }}
                className="flex items-center gap-3 bg-white/95 backdrop-blur-sm border border-black/10 shadow-xl px-4 py-3 hover:bg-green-50 transition-colors duration-200"
                style={{ borderRadius: 12, minWidth: 220 }}>
               <span className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -244,7 +251,8 @@ export default function Home() {
           </h1>
           <p className="lr-hero-sub">Un solo equipo. Cada detalle. Desde la primera idea hasta el último abrazo de la noche.</p>
           <div className="lr-hero-actions">
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary">Iniciar mi experiencia</a>
+            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary"
+               onClick={() => trackWhatsAppClick("hero")}>Iniciar mi experiencia</a>
             <a href="#experiencia" className="lr-btn-ghost">Descubrir más</a>
           </div>
         </div>
@@ -265,7 +273,8 @@ export default function Home() {
             Mientras tú y los tuyos viven cada momento, nosotros operamos con precisión detrás de escena. <strong>Antes, durante y después.</strong> Sin excepción.<br /><br />
             Nuestros clientes no contratan un espacio. <strong>Invierten en certeza, lujo y momentos que jamás olvidarán.</strong>
           </p>
-          <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary">Conocer la experiencia</a>
+          <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary"
+             onClick={() => trackWhatsAppClick("statement")}>Conocer la experiencia</a>
         </div>
       </section>
 
@@ -322,7 +331,9 @@ export default function Home() {
               <h3 className="lr-gastro-title">Menús diseñados<br />para <em>sorprender</em></h3>
               <p className="lr-gastro-desc">Desde tablas de quesos artesanales hasta postres de autor con técnica de alta cocina. Cada bocado es parte de la narrativa de tu evento, curado por nuestro equipo gastronómico con la misma atención al detalle que el resto de la producción.</p>
             </div>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary" style={{ flexShrink: 0 }}>Conocer nuestra propuesta</a>
+            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary"
+               style={{ flexShrink: 0 }}
+               onClick={() => trackWhatsAppClick("gastro")}>Conocer nuestra propuesta</a>
           </div>
         </div>
       </section>
@@ -440,7 +451,8 @@ export default function Home() {
       <section className="lr-final-cta lr-reveal">
         <h2 className="lr-final-cta-title">Tu celebración perfecta<br /><em>comienza aquí.</em></h2>
         <p className="lr-final-cta-sub">Un asesor especializado te guía desde la primera idea hasta el último detalle.</p>
-        <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary">Iniciar mi experiencia →</a>
+        <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="lr-btn-primary"
+           onClick={() => trackWhatsAppClick("final_cta")}>Iniciar mi experiencia →</a>
       </section>
 
       {/* CONTACT */}
