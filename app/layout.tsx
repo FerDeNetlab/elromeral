@@ -37,18 +37,61 @@ const _montserrat = Montserrat({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://elromeral.com.mx"),
-  title: "El Romeral - Jardín para Bodas en Guadalajara | Venue de Eventos",
+
+  // ── Titles ──────────────────────────────────────────────────────────────
+  title: {
+    default: "El Romeral · Bodas & Eventos en Guadalajara | Venue Premium Zapopan",
+    template: "%s · El Romeral Guadalajara",
+  },
+
+  // ── Description ─────────────────────────────────────────────────────────
   description:
-    "El Romeral es el jardín perfecto para tu boda en Guadalajara. Espacios naturales únicos, servicios personalizados y paquetes todo incluido. Cotiza tu boda ideal hoy.",
-  generator: "v0.app",
+    "El Romeral en Zapopan, Guadalajara: venue premium para bodas, XV años, bautizos y eventos corporativos. Producción integral, gastronomía de autor y espacios únicos. Más de 20 años de experiencia. Cotiza hoy.",
+
+  // ── Keywords — MX + US diaspora ─────────────────────────────────────────
   keywords: [
+    // Español · México
     "bodas guadalajara",
-    "jardín de eventos",
-    "venue bodas",
+    "venue bodas guadalajara",
     "salón de eventos guadalajara",
-    "boda en jardín",
-    "el romeral",
+    "jardín de eventos guadalajara",
+    "xv años guadalajara",
+    "quinceañera guadalajara",
+    "bautizo guadalajara",
+    "eventos corporativos guadalajara",
+    "producción de eventos guadalajara",
+    "organizador de bodas guadalajara",
+    "boda todo incluido guadalajara",
+    "venue premium guadalajara",
+    "el romeral zapopan",
+    "bodas zapopan",
+    "jardín bodas jalisco",
+    "hacienda bodas guadalajara",
+    "comunión guadalajara",
+    "eventos diurnos guadalajara",
+    "gastronomía eventos guadalajara",
+    "coordinación de bodas guadalajara",
+    // English · US diaspora
+    "wedding venue guadalajara",
+    "quinceanera venue guadalajara",
+    "event venue guadalajara mexico",
+    "wedding hall guadalajara jalisco",
+    "luxury wedding venue mexico",
+    "quinceañera venue mexico",
+    "wedding coordinator guadalajara",
+    "all inclusive wedding guadalajara",
   ],
+
+  // ── Canonical & alternates ───────────────────────────────────────────────
+  alternates: {
+    canonical: "https://elromeral.com.mx",
+    languages: {
+      "es-MX": "https://elromeral.com.mx",
+      "x-default": "https://elromeral.com.mx",
+    },
+  },
+
+  // ── Icons ────────────────────────────────────────────────────────────────
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png" },
@@ -56,35 +99,182 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
+
+  // ── Open Graph ───────────────────────────────────────────────────────────
   openGraph: {
-    title: "El Romeral - Jardín para Bodas en Guadalajara",
-    description: "El jardín perfecto para tu boda. Espacios naturales únicos y servicios personalizados.",
+    title: "El Romeral · Bodas & Eventos en Guadalajara",
+    description:
+      "Venue premium para bodas, XV años, bautizos y eventos corporativos en Zapopan, Guadalajara. Producción integral. Gastronomía de autor. Más de 20 años de experiencia.",
     url: "https://elromeral.com.mx",
     siteName: "El Romeral",
     images: [
       {
-        url: "/images/40-20iluminaciones-20-281-29.jpeg",
+        url: "/images/redesign/venue-salon.jpg",
         width: 1200,
         height: 630,
-        alt: "El Romeral - Jardín nocturno con iluminación elegante",
+        alt: "El Romeral — Salón de eventos premium en Zapopan, Guadalajara",
+      },
+      {
+        url: "/images/redesign/boda-dia.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Boda de día en El Romeral, Guadalajara",
       },
     ],
     locale: "es_MX",
     type: "website",
   },
+
+  // ── Twitter / X ──────────────────────────────────────────────────────────
   twitter: {
     card: "summary_large_image",
-    title: "El Romeral - Jardín para Bodas en Guadalajara",
-    description: "El jardín perfecto para tu boda. Espacios naturales únicos y servicios personalizados.",
-    images: ["/images/40-20iluminaciones-20-281-29.jpeg"],
+    title: "El Romeral · Bodas & Eventos en Guadalajara",
+    description:
+      "Venue premium en Zapopan, Guadalajara. Bodas, XV años, bautizos y eventos corporativos. Producción integral. Cotiza hoy.",
+    images: ["/images/redesign/venue-salon.jpg"],
   },
+
+  // ── Google / robots ──────────────────────────────────────────────────────
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  // ── Google Search Console verification ──────────────────────────────────
+  // Descomenta y agrega tu código cuando lo tengas:
+  // verification: {
+  //   google: "TU_CODIGO_DE_VERIFICACION",
+  // },
 }
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#4a5043",
+  themeColor: "#B8935A",
   viewportFit: "cover",
+}
+
+// ── JSON-LD Structured Data ───────────────────────────────────────────────────
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["EventVenue", "LocalBusiness"],
+      "@id": "https://elromeral.com.mx/#venue",
+      name: "El Romeral",
+      description:
+        "Venue premium para bodas, XV años, bautizos y eventos corporativos en Zapopan, Guadalajara. Producción integral con más de 20 años de experiencia.",
+      url: "https://elromeral.com.mx",
+      telephone: "+523336821088",
+      email: "contacto@elromeral.com.mx",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "Prolongación Av. Vallarta 2951",
+        addressLocality: "Zapopan",
+        addressRegion: "Jalisco",
+        postalCode: "45010",
+        addressCountry: "MX",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: 20.6735,
+        longitude: -103.4376,
+      },
+      hasMap: "https://maps.google.com/?q=El+Romeral+Prolongacion+Av+Vallarta+2951+Zapopan+Jalisco",
+      openingHoursSpecification: [
+        {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          opens: "09:00",
+          closes: "17:00",
+        },
+      ],
+      priceRange: "$$$",
+      currenciesAccepted: "MXN",
+      paymentAccepted: "Cash, Credit Card, Bank Transfer",
+      image: [
+        "https://elromeral.com.mx/images/redesign/venue-salon.jpg",
+        "https://elromeral.com.mx/images/redesign/boda-dia.jpg",
+        "https://elromeral.com.mx/images/redesign/xv-noche.jpg",
+        "https://elromeral.com.mx/images/redesign/venue-lago-fuego.jpg",
+      ],
+      areaServed: [
+        { "@type": "City", name: "Guadalajara" },
+        { "@type": "City", name: "Zapopan" },
+        { "@type": "AdministrativeArea", name: "Jalisco" },
+        { "@type": "Country", name: "México" },
+      ],
+      amenityFeature: [
+        { "@type": "LocationFeatureSpecification", name: "Estacionamiento", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Área al aire libre", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Salón techado", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Gastronomía propia", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Acceso para personas con discapacidad", value: true },
+      ],
+      // Tipos de eventos que se realizan
+      knowsAbout: [
+        "Bodas",
+        "XV Años",
+        "Quinceañeras",
+        "Bautizos",
+        "Comuniones",
+        "Eventos Corporativos",
+        "Producción de Eventos",
+        "Gastronomía de Autor",
+        "Coordinación de Bodas",
+        "Diseño de Eventos",
+      ],
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://elromeral.com.mx/#organization",
+      name: "El Romeral",
+      url: "https://elromeral.com.mx",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://elromeral.com.mx/favicon.png",
+      },
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          telephone: "+523336821088",
+          contactType: "customer service",
+          areaServed: ["MX", "US"],
+          availableLanguage: ["Spanish"],
+          contactOption: "TollFree",
+        },
+        {
+          "@type": "ContactPoint",
+          contactType: "sales",
+          email: "contacto@elromeral.com.mx",
+          areaServed: ["MX", "US"],
+          availableLanguage: ["Spanish"],
+        },
+      ],
+      foundingDate: "2004",
+      numberOfEmployees: { "@type": "QuantitativeValue", value: 20 },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://elromeral.com.mx/#website",
+      url: "https://elromeral.com.mx",
+      name: "El Romeral",
+      description: "Venue premium para bodas y eventos en Guadalajara, Jalisco",
+      publisher: { "@id": "https://elromeral.com.mx/#organization" },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: "https://elromeral.com.mx/galeria?q={search_term_string}" },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
 }
 
 export default function RootLayout({
@@ -100,6 +290,11 @@ export default function RootLayout({
       <body
         className={`${_geist.variable} ${_geistMono.variable} ${_cormorantGaramond.variable} ${_montserrat.variable} font-sans antialiased`}
       >
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         {children}
         <Analytics />
         <script
