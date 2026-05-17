@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono, Cormorant_Garamond } from "next/font/google"
+import { Geist, Geist_Mono, Cormorant_Garamond, Montserrat } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
@@ -15,15 +15,24 @@ const _geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
-  preload: false, // No precargar fuente mono ya que se usa poco
+  preload: false,
 })
 
 const _cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["300", "400", "600"], // Reducido de 5 pesos a 3
+  weight: ["300", "400", "600"],
+  style: ["normal", "italic"],
   variable: "--font-serif",
   display: "swap",
   preload: true,
+})
+
+const _montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-montserrat",
+  display: "swap",
+  preload: false,
 })
 
 export const metadata: Metadata = {
@@ -89,7 +98,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body
-        className={`${_geist.variable} ${_geistMono.variable} ${_cormorantGaramond.variable} font-sans antialiased`}
+        className={`${_geist.variable} ${_geistMono.variable} ${_cormorantGaramond.variable} ${_montserrat.variable} font-sans antialiased`}
       >
         {children}
         <Analytics />
