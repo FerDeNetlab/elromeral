@@ -215,6 +215,63 @@ async function notifyAdvisor(lead: WaLeadData): Promise<void> {
 
 const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
+// ─── Extracción de nombre desde mensaje libre ─────────────────────────────────
+function extractCleanName(text: string): string | null {
+  let s = text.trim()
+
+  // 1. Quitar saludos (incluyendo variantes con "tardes/noches/días")
+  s = s.replace(
+    /^(buenas?\s*(tardes?|noches?|d[ií]as?)?[,!.]?\s*|buenos?\s*d[ií]as?[,!.]?\s*|hola[,!.]?\s*|hey[,!.]?\s*|hi[,!.]?\s*)+/gi,
+    "",
+  )
+
+  // 2. Quitar frases de presentación al inicio
+  s = s.replace(
+    /^(mi\s+nombre\s+es\s+|me\s+llamo\s+|soy\s+|les?\s+habla\s+|les?\s+escribe\s+|le\s+habla\s+)/gi,
+    "",
+  )
+
+  // 3. Quitar respuestas afirmativas como "Claro, soy X" / "Si, es X"
+  s = s.replace(
+    /^(claro[,!.]?\s*(?:es\s+|soy\s+)?|s[ií][,!.]?\s*(?:claro[,!.]?\s*)?(?:es\s+|soy\s+)?|con\s+gusto[,!.]?\s*(?:es\s+|soy\s+)?|por\s+supuesto[,!.]?\s*(?:es\s+|soy\s+)?|disculpa[,!.]?\s*(?:es\s+|soy\s+)?)/gi,
+    "",
+  )
+
+  // 4. "Mafer, mucho gusto" → tomar sólo lo que va antes de la coma si el resto es frase social
+  if (s.includes(",")) {
+    const [before, ...rest] = s.split(",")
+    const beforeTrimmed = before.trim()
+    const afterTrimmed = rest.join(",").trim()
+    if (
+      beforeTrimmed.split(/\s+/).length <= 3 &&
+      beforeTrimmed.length <= 30 &&
+      /^(mucho\s+gusto|con\s+gusto|encantad[oa]|un\s+placer|gusto\s+en)/i.test(afterTrimmed)
+    ) {
+      s = beforeTrimmed
+    }
+  }
+
+  // 5. Quitar frases sociales al final
+  s = s
+    .replace(/[,!.]?\s*(mucho\s+gusto|con\s+gusto|encantad[oa]|un\s+placer|buen\s+d[ií]a)\s*$/gi, "")
+    .trim()
+
+  // 6. Descartar si parece pregunta o solicitud (no es un nombre)
+  if (
+    /\?/.test(s) ||
+    /\b(podr[ií]as?|quisiera|quiero|necesito|me\s+(puede|gustar[ií]a|podr[ií]a)|informaci[oó]n|cotizaci[oó]n|disponibilidad|apoyar|ayudar|favor|servicios?|evento|boda|precio)\b/i.test(s) ||
+    s.length > 45 ||
+    s.split(/\s+/).length > 5
+  ) {
+    return null
+  }
+
+  // 7. Debe tener al menos 2 chars y empezar con letra
+  if (s.length < 2 || !/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]/i.test(s)) return null
+
+  return s
+}
+
 // ─── Motor principal del funnel ───────────────────────────────────────────────
 async function runFunnel(
   lead: WaLeadData,
@@ -226,12 +283,9 @@ async function runFunnel(
   const history: WaMessage[] = detail.wa_conversation_history ?? []
   const nombre = lead.nombres && !lead.nombres.startsWith("Lead WhatsApp") ? lead.nombres : null
 
-  // Etapas terminales
-  if (["not_qualified", "calendly_sent", "advisor_notified", "completed"].includes(stage)) {
-    return `Gracias por escribir${nombre ? `, ${nombre}` : ""}. Si necesitas algo más, aquí estaremos. 🤍`
-  }
-  if (stage === "needs_human") {
-    return `Gracias por tu mensaje${nombre ? `, ${nombre}` : ""}. Un asesor te atenderá en breve. 🤍`
+  // Etapas terminales: el bot guarda silencio para que el asesor humano tome el hilo
+  if (["not_qualified", "calendly_sent", "advisor_notified", "needs_human", "completed"].includes(stage)) {
+    return ""
   }
 
   // ── Bienvenida ──
@@ -244,15 +298,29 @@ async function runFunnel(
     return welcomeText
   }
 
-  // ── COLLECT_NAME: cualquier texto = nombre ──
+  // ── COLLECT_NAME: extraer nombre de forma inteligente ──
   if (stage === "collect_name") {
-    let nombre_raw = userMessage.trim()
-    // Eliminar saludos y frases de presentación
-    nombre_raw = nombre_raw
-      .replace(/^(hola[,.]?|buenas[,.]?|buenos[,.]?|hey[,.]?|hi[,.]?)\s*/i, "")
-      .replace(/^(mi\s+nombre\s+es|me\s+llamo|soy|les\s+habla|les\s+escribe)\s*/i, "")
-      .trim()
-    const nombreDetectado = nombre_raw.length > 0 && nombre_raw.length <= 60 ? nombre_raw : userMessage.trim()
+    const detailExt = detail as WaSourceDetail & { wa_name_retries?: number }
+    const nameRetries = detailExt.wa_name_retries ?? 0
+    const extractedName = extractCleanName(userMessage)
+
+    if (!extractedName && nameRetries < 1) {
+      // Primera vez que no podemos extraer el nombre → pedir de nuevo
+      const askMsg = `Con mucho gusto te ayudo. 😊 ¿Me podrías compartir tu nombre?`
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askMsg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_conversation_history: newHist, wa_name_retries: 1 } as unknown as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return askMsg
+    }
+
+    // Usar nombre extraído, o nombre de perfil de WhatsApp como respaldo
+    const profileName = lead.nombres?.startsWith("Lead WhatsApp ")
+      ? lead.nombres.slice("Lead WhatsApp ".length).trim() || null
+      : null
+    const nombreDetectado = extractedName ?? profileName ?? "amigo"
+
     const msg = buildAfterNameMessage(nombreDetectado)
     const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
     await updateLead(lead.id, {
@@ -627,10 +695,22 @@ async function sendAndLog(
   phone: string, text: string, lead: WaLeadData, stage: WaStage,
 ): Promise<void> {
   const { accessToken, phoneNumberId } = getEnv()
+  // Deduplicar mensajes outbound: ventana de 30s por contenido → evita duplicados
+  // cuando Meta reintenta el webhook o hay dos procesos concurrentes
+  const window30s = Math.floor(Date.now() / 30_000)
+  const contentHash = crypto
+    .createHash("sha256")
+    .update(`${phone}:${text}:${window30s}`)
+    .digest("hex")
+    .slice(0, 24)
+  const outboundId = `out-${contentHash}`
+
+  // Loguear primero; si es duplicado, omitir el envío
+  const shouldSend = await logMessage(outboundId, phone, text, lead.id, "outbound", stage)
+    .catch(() => true) // ante error de log, priorizar el envío
+  if (!shouldSend) return
+
   await sendWhatsAppTextMessage({ accessToken, phoneNumberId, to: phone, body: text })
-  await logMessage(
-    `out-${Date.now()}-${phone}`, phone, text, lead.id, "outbound", stage,
-  ).catch(() => {/* outbound log no es crítico */})
 }
 
 // ─── GET: verificación del webhook con Meta ───────────────────────────────────
@@ -678,6 +758,7 @@ export async function POST(request: Request) {
           if (!shouldProcess) continue
 
           const replyText = await runFunnel(lead, msg.text, msg.from)
+          if (!replyText) continue // etapa terminal: bot silencioso
           const updatedLead = await findLeadByPhone(msg.from)
           const currentStage: WaStage = (updatedLead?.source_detail as WaSourceDetail)?.wa_stage ?? stage
           await sendAndLog(msg.from, replyText, updatedLead ?? lead, currentStage)

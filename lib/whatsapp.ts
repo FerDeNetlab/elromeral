@@ -50,6 +50,7 @@ export interface WaSourceDetail {
   wa_rango_invitados?: GuestRange
   wa_reconsidero?: boolean
   wa_conversation_history?: WaMessage[]
+  wa_name_retries?: number
 }
 
 export interface WaMessage {
