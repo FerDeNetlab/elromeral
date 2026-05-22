@@ -18,6 +18,7 @@ interface Contact {
 interface Product {
     id: string
     titulo: string
+    descripcion: string | null
     precio: number
     tipo_precio: "fijo" | "por_invitado"
     category_id: string | null
@@ -76,7 +77,7 @@ export default function NuevaCotizacionPage() {
         const supabase = createBrowserClient()
         const [contactsRes, productsRes] = await Promise.all([
             supabase.from("contacts").select("id, nombre_pareja, email, fecha_evento, num_invitados").order("nombre_pareja"),
-            supabase.from("products").select("id, titulo, precio, tipo_precio, category_id, product_categories(nombre)").eq("activo", true).order("titulo"),
+            supabase.from("products").select("id, titulo, descripcion, precio, tipo_precio, category_id, product_categories(nombre)").eq("activo", true).order("titulo"),
         ])
         if (contactsRes.data) setContacts(contactsRes.data)
         if (productsRes.data) {
@@ -101,7 +102,7 @@ export default function NuevaCotizacionPage() {
             tempId: crypto.randomUUID(),
             product_id: product?.id || null,
             nombre: product?.titulo || "",
-            descripcion: "",
+            descripcion: product?.descripcion || "",
             categoria: product?.category_name || "",
             precio_unitario: product?.precio || 0,
             cantidad: 1,
