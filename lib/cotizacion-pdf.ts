@@ -43,6 +43,7 @@ export async function generarPdfCotizacion(
     itemsSeleccionados?: Record<string, boolean>
 ) {
     const { jsPDF } = await import("jspdf")
+    const { default: autoTable } = await import("jspdf-autotable")
     const doc = new jsPDF()
     const pageWidth = doc.internal.pageSize.getWidth()
     const pageHeight = doc.internal.pageSize.getHeight()
@@ -82,9 +83,9 @@ export async function generarPdfCotizacion(
 
     let yPos = 70
 
-    // Process each category
-    categoriasAgrupadas.forEach((cat) => {
-        if (yPos > pageHeight - 100) {
+    // Process each category using autoTable for proper word-wrapping
+    for (const cat of categoriasAgrupadas) {
+        if (yPos > pageHeight - 60) {
             doc.addPage()
             yPos = margin + 10
         }
@@ -94,101 +95,65 @@ export async function generarPdfCotizacion(
         doc.setTextColor(74, 80, 67)
         doc.setFont("helvetica", "bold")
         doc.text(cat.nombre.toUpperCase(), margin, yPos)
-        yPos += 7
+        yPos += 5
 
         // Category line
         doc.setDrawColor(74, 80, 67)
         doc.setLineWidth(0.3)
         doc.line(margin, yPos, pageWidth - margin, yPos)
-        yPos += 8
+        yPos += 3
 
-        // Table headers
-        doc.setFontSize(9)
-        doc.setFont("helvetica", "bold")
-        doc.setTextColor(40, 40, 40)
-        doc.setFillColor(245, 245, 245)
-        doc.rect(margin, yPos - 5, contentWidth, 6, "F")
-
-        const colWidths = {
-            nombre: contentWidth * 0.3,
-            descripcion: contentWidth * 0.2,
-            cantidad: contentWidth * 0.15,
-            precioUnitario: contentWidth * 0.15,
-            subtotal: contentWidth * 0.2,
-        }
-
-        let xPos = margin
-        doc.text("Descripción", xPos + 2, yPos)
-        xPos += colWidths.nombre
-
-        doc.text("Detalle", xPos + 2, yPos)
-        xPos += colWidths.descripcion
-
-        doc.text("Cant.", xPos + 2, yPos)
-        xPos += colWidths.cantidad
-
-        doc.text("P. Unitario", xPos + 2, yPos)
-        xPos += colWidths.precioUnitario
-
-        doc.text("Subtotal", pageWidth - margin, yPos, { align: "right" })
-        yPos += 8
-
-        // Table items
-        doc.setFont("helvetica", "normal")
-        doc.setTextColor(40, 40, 40)
-
-        cat.lineas.forEach((item, index) => {
-            if (yPos > pageHeight - 30) {
-                doc.addPage()
-                yPos = margin + 10
-            }
-
-            const cant = item.cantidad
-            const qty = item.es_por_invitado ? cant * numInvitados : cant
+        // Build table rows
+        const tableBody = cat.lineas.map((item) => {
+            const qty = item.es_por_invitado ? item.cantidad * numInvitados : item.cantidad
             const subtotal = item.precio_unitario * qty
-
-            doc.setFontSize(8)
-            const lineHeight = 6
-
-            // Cell background alternation
-            if (index % 2 === 0) {
-                doc.setFillColor(250, 250, 250)
-                doc.rect(margin, yPos - 4, contentWidth, lineHeight, "F")
-            }
-
-            xPos = margin
-
-            // Nombre (truncated if needed)
-            const nombre = item.nombre.length > 40 ? item.nombre.substring(0, 37) + "..." : item.nombre
-            doc.text(nombre, xPos + 2, yPos)
-            xPos += colWidths.nombre
-
-            // Descripción
-            const desc = item.descripcion
-                ? item.descripcion.length > 30
-                    ? item.descripcion.substring(0, 27) + "..."
-                    : item.descripcion
-                : "-"
-            doc.text(desc, xPos + 2, yPos)
-            xPos += colWidths.descripcion
-
-            // Cantidad
-            const cantText = item.es_por_invitado ? `${cant}×${numInvitados}=${qty}` : `${qty}`
-            doc.text(cantText, xPos + 2, yPos)
-            xPos += colWidths.cantidad
-
-            // Precio unitario
-            doc.text(`$${item.precio_unitario.toLocaleString("es-MX")}`, xPos + 2, yPos)
-            xPos += colWidths.precioUnitario
-
-            // Subtotal
-            doc.text(`$${subtotal.toLocaleString("es-MX")}`, pageWidth - margin - 2, yPos, { align: "right" })
-
-            yPos += lineHeight
+            return [
+                item.nombre,
+                item.descripcion || "-",
+                item.es_por_invitado ? `${item.cantidad}×${numInvitados}=${qty}` : `${qty}`,
+                `$${item.precio_unitario.toLocaleString("es-MX")}`,
+                `$${subtotal.toLocaleString("es-MX")}`,
+            ]
         })
 
-        yPos += 5
-    })
+        autoTable(doc, {
+            startY: yPos,
+            head: [["Descripción", "Detalle", "Cant.", "P. Unitario", "Subtotal"]],
+            body: tableBody,
+            tableWidth: contentWidth,
+            margin: { left: margin, right: margin },
+            styles: {
+                fontSize: 8,
+                cellPadding: { top: 3, right: 4, bottom: 3, left: 3 },
+                overflow: "linebreak",
+                textColor: [40, 40, 40],
+                lineWidth: 0,
+            },
+            headStyles: {
+                fillColor: [245, 245, 245],
+                textColor: [40, 40, 40],
+                fontStyle: "bold",
+                fontSize: 9,
+                lineWidth: 0,
+            },
+            bodyStyles: {
+                fillColor: [255, 255, 255],
+            },
+            alternateRowStyles: {
+                fillColor: [250, 250, 250],
+            },
+            columnStyles: {
+                0: { cellWidth: contentWidth * 0.32 },
+                1: { cellWidth: contentWidth * 0.26 },
+                2: { cellWidth: contentWidth * 0.1,  halign: "center" },
+                3: { cellWidth: contentWidth * 0.16, halign: "right" },
+                4: { cellWidth: contentWidth * 0.16, halign: "right" },
+            },
+        })
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        yPos = (doc as any).lastAutoTable.finalY + 10
+    }
 
     // Total section
     if (yPos > pageHeight - 40) {
