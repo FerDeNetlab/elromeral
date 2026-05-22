@@ -103,13 +103,15 @@ export async function generarPdfCotizacion(
         doc.line(margin, yPos, pageWidth - margin, yPos)
         yPos += 3
 
-        // Build table rows
+        // Build table rows — nota va debajo del nombre en la misma celda
         const tableBody = cat.lineas.map((item) => {
             const qty = item.es_por_invitado ? item.cantidad * numInvitados : item.cantidad
             const subtotal = item.precio_unitario * qty
+            // La nota se incluye como segunda línea para que autoTable calcule la altura correcta;
+            // didDrawCell la re-renderiza en gris e itálica
+            const descripcion = item.nota ? `${item.nombre}\n${item.nota}` : item.nombre
             return [
-                item.nombre,
-                item.descripcion || "-",
+                descripcion,
                 item.es_por_invitado ? `${item.cantidad}×${numInvitados}=${qty}` : `${qty}`,
                 `$${item.precio_unitario.toLocaleString("es-MX")}`,
                 `$${subtotal.toLocaleString("es-MX")}`,
@@ -118,7 +120,7 @@ export async function generarPdfCotizacion(
 
         autoTable(doc, {
             startY: yPos,
-            head: [["Descripción", "Detalle", "Cant.", "P. Unitario", "Subtotal"]],
+            head: [["Descripción", "Cant.", "P. Unitario", "Subtotal"]],
             body: tableBody,
             tableWidth: contentWidth,
             margin: { left: margin, right: margin },
@@ -143,11 +145,45 @@ export async function generarPdfCotizacion(
                 fillColor: [250, 250, 250],
             },
             columnStyles: {
-                0: { cellWidth: contentWidth * 0.32 },
-                1: { cellWidth: contentWidth * 0.26 },
-                2: { cellWidth: contentWidth * 0.1,  halign: "center" },
-                3: { cellWidth: contentWidth * 0.16, halign: "right" },
-                4: { cellWidth: contentWidth * 0.16, halign: "right" },
+                0: { cellWidth: contentWidth * 0.52 },
+                1: { cellWidth: contentWidth * 0.12, halign: "center" },
+                2: { cellWidth: contentWidth * 0.18, halign: "right" },
+                3: { cellWidth: contentWidth * 0.18, halign: "right" },
+            },
+            // Re-renderizar la celda de descripción para que la nota salga en gris itálica
+            didDrawCell: (data) => {
+                if (data.section !== "body" || data.column.index !== 0) return
+                const item = cat.lineas[data.row.index]
+                if (!item?.nota) return
+
+                const px = data.cell.x + data.cell.padding("left")
+                const cellW = data.cell.width - data.cell.padding("left") - data.cell.padding("right")
+                const py = data.cell.y + data.cell.padding("top")
+
+                // Fondo de la celda (sobreescribir lo que autoTable dibujó)
+                const bg = data.row.index % 2 === 0 ? [255, 255, 255] : [250, 250, 250]
+                doc.setFillColor(bg[0], bg[1], bg[2])
+                doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, "F")
+
+                // Nombre en estilo normal
+                doc.setFontSize(8)
+                doc.setTextColor(40, 40, 40)
+                doc.setFont("helvetica", "normal")
+                const nombreLines = doc.splitTextToSize(item.nombre, cellW)
+                doc.text(nombreLines, px, py + 2.5)
+
+                // Nota debajo, en gris e itálica
+                const nombreH = nombreLines.length * 8 * 0.3528
+                doc.setFontSize(7)
+                doc.setTextColor(140, 140, 140)
+                doc.setFont("helvetica", "italic")
+                const notaLines = doc.splitTextToSize(item.nota, cellW)
+                doc.text(notaLines, px, py + nombreH + 4.5)
+
+                // Restaurar estilos para el resto de la tabla
+                doc.setFontSize(8)
+                doc.setTextColor(40, 40, 40)
+                doc.setFont("helvetica", "normal")
             },
         })
 
