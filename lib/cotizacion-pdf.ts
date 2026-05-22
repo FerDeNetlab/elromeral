@@ -107,12 +107,11 @@ export async function generarPdfCotizacion(
         const tableBody = cat.lineas.map((item) => {
             const qty = item.es_por_invitado ? item.cantidad * numInvitados : item.cantidad
             const subtotal = item.precio_unitario * qty
-            // Combinar nombre + descripcion + nota para que autoTable calcule la altura correcta
-            let descripcion = item.nombre
-            if (item.descripcion) descripcion += `\n${item.descripcion}`
-            if (item.nota) descripcion += `\n${item.nota}`
+            const partes = [item.nombre]
+            if (item.descripcion) partes.push(item.descripcion)
+            if (item.nota) partes.push(`* ${item.nota}`)
             return [
-                descripcion,
+                partes.join("\n"),
                 item.es_por_invitado ? `${item.cantidad}×${numInvitados}=${qty}` : `${qty}`,
                 `$${item.precio_unitario.toLocaleString("es-MX")}`,
                 `$${subtotal.toLocaleString("es-MX")}`,
@@ -150,53 +149,6 @@ export async function generarPdfCotizacion(
                 1: { cellWidth: contentWidth * 0.12, halign: "center" },
                 2: { cellWidth: contentWidth * 0.18, halign: "right" },
                 3: { cellWidth: contentWidth * 0.18, halign: "right" },
-            },
-            // Renderizar nombre / descripcion / nota con estilos distintos
-            didDrawCell: (data) => {
-                if (data.section !== "body" || data.column.index !== 0) return
-                const item = cat.lineas[data.row.index]
-                if (!item?.descripcion && !item?.nota) return
-
-                const px = data.cell.x + data.cell.padding("left")
-                const cellW = data.cell.width - data.cell.padding("left") - data.cell.padding("right")
-                const py = data.cell.y + data.cell.padding("top")
-
-                // Fondo (sobreescribir lo que autoTable dibujó)
-                const bg = data.row.index % 2 === 0 ? [255, 255, 255] : [250, 250, 250]
-                doc.setFillColor(bg[0], bg[1], bg[2])
-                doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, "F")
-
-                // Nombre — negro, normal, 8pt
-                doc.setFontSize(8)
-                doc.setTextColor(40, 40, 40)
-                doc.setFont("helvetica", "normal")
-                const nombreLines = doc.splitTextToSize(item.nombre, cellW)
-                doc.text(nombreLines, px, py + 2.5)
-                let currentY = py + nombreLines.length * 8 * 0.3528 + 1.5
-
-                // Descripcion — gris oscuro, normal, 7.5pt
-                if (item.descripcion) {
-                    doc.setFontSize(7.5)
-                    doc.setTextColor(90, 90, 90)
-                    doc.setFont("helvetica", "normal")
-                    const descLines = doc.splitTextToSize(item.descripcion, cellW)
-                    doc.text(descLines, px, currentY + 2)
-                    currentY += descLines.length * 7.5 * 0.3528 + 2
-                }
-
-                // Nota — gris claro, itálica, 7pt
-                if (item.nota) {
-                    doc.setFontSize(7)
-                    doc.setTextColor(140, 140, 140)
-                    doc.setFont("helvetica", "italic")
-                    const notaLines = doc.splitTextToSize(item.nota, cellW)
-                    doc.text(notaLines, px, currentY + 2)
-                }
-
-                // Restaurar estilos
-                doc.setFontSize(8)
-                doc.setTextColor(40, 40, 40)
-                doc.setFont("helvetica", "normal")
             },
         })
 
