@@ -184,7 +184,8 @@ export async function generarPdfCotizacion(
     doc.setFont("helvetica", "normal")
     doc.setTextColor(120, 120, 120)
     doc.text("Precios en moneda nacional - No incluye I.V.A.", pageWidth / 2, yPos, { align: "center" })
-    doc.text(`Generado el ${new Date().toLocaleDateString("es-MX")}`, pageWidth / 2, yPos + 5, { align: "center" })
+    doc.text("Vigencia de la propuesta 15 días naturales.", pageWidth / 2, yPos + 5, { align: "center" })
+    doc.text(`Generado el ${new Date().toLocaleDateString("es-MX")}`, pageWidth / 2, yPos + 10, { align: "center" })
 
     return doc
 }

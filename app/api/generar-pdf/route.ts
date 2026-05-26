@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
             <tr>
               <td colspan="4" style="padding: 0;">
                 <div class="benefit-box" style="margin: 15px 8px;">
-                  <div class="benefit-title">🎯 Dirección Integral del Evento</div>
+                  <div class="benefit-title">🎯 Coordinación de pre-montaje</div>
                   <div class="benefit-desc">
                     El Romeral no solo es un venue, contamos con todos los servicios in house para que tu evento fluya con orden y tranquilidad.
                   </div>
@@ -512,6 +512,7 @@ export async function GET(request: NextRequest) {
   </div>
 
   <div class="footer">
+    <p>Vigencia de la propuesta 15 días naturales.</p>
     <p>Cotización generada desde romeralvenue.com</p>
     <div class="contact-info">
       <div>📞 33 3870 8159</div>

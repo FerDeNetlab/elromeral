@@ -81,7 +81,7 @@ export function calcularPrecioTotal(data: ConfiguradorData): number {
 
   // 9. Música
   if (data.tipoMusica === "dj") {
-    total += PRECIO_DJ_GRUPO_RESET // DJ Romeral $21,000
+    total += PRECIO_DJ_GRUPO_RESET // DJ Romeral $25,000
     total += PRECIO_EQUIPO_SONIDO // Equipo Bose $88,500
 
     // Si es evento de cena, incluye iluminación adicional

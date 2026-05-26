@@ -89,7 +89,7 @@ export const PRECIO_PASTO = 0
 export const PRECIO_ENTARIMADO = 83000
 
 // Precios de música - DJ
-export const PRECIO_DJ_GRUPO_RESET = 21000
+export const PRECIO_DJ_GRUPO_RESET = 25000
 export const PRECIO_EQUIPO_SONIDO = 88500
 export const PRECIO_CABINA_DJ = 0
 export const PRECIO_ILUMINACION_ARQUITECTONICA = 32000

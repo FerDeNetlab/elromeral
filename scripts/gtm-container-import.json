@@ -1,0 +1,265 @@
+{
+  "exportFormatVersion": 2,
+  "exportTime": "2026-05-17 00:47:36",
+  "containerVersion": {
+    "path": "accounts/6355702881/containers/252666254/versions/0",
+    "accountId": "6355702881",
+    "containerId": "252666254",
+    "containerVersionId": "0",
+    "container": {
+      "path": "accounts/6355702881/containers/252666254",
+      "accountId": "6355702881",
+      "containerId": "252666254",
+      "name": "elromeral.com.mx",
+      "publicId": "GTM-N3KKT5X4",
+      "usageContext": ["WEB"],
+      "features": {
+        "supportUserPermissions": true,
+        "supportEnvironments": true,
+        "supportWorkspaces": true,
+        "supportGtagConfigs": false,
+        "supportBuiltInVariables": true,
+        "supportClients": false,
+        "supportFolders": true,
+        "supportTags": true,
+        "supportTemplates": true,
+        "supportTriggers": true,
+        "supportVariables": true,
+        "supportVersions": true,
+        "supportZones": true,
+        "supportTransformations": false
+      },
+      "tagIds": ["GTM-N3KKT5X4"]
+    },
+    "builtInVariable": [
+      { "accountId": "6355702881", "containerId": "252666254", "type": "PAGE_URL", "name": "Page URL" },
+      { "accountId": "6355702881", "containerId": "252666254", "type": "PAGE_HOSTNAME", "name": "Page Hostname" },
+      { "accountId": "6355702881", "containerId": "252666254", "type": "PAGE_PATH", "name": "Page Path" },
+      { "accountId": "6355702881", "containerId": "252666254", "type": "REFERRER", "name": "Referrer" },
+      { "accountId": "6355702881", "containerId": "252666254", "type": "EVENT", "name": "Event" }
+    ],
+    "variable": [
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "variableId": "1",
+        "name": "DLV - method",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "method" }
+        ]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "variableId": "2",
+        "name": "DLV - cta_location",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "cta_location" }
+        ]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "variableId": "3",
+        "name": "DLV - question",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "question" }
+        ]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "variableId": "4",
+        "name": "Const - GA4 Measurement ID",
+        "type": "c",
+        "notes": "Measurement ID de GA4 para El Romeral",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "value", "value": "G-Q7D4RLWSF1" }
+        ]
+      }
+    ],
+    "trigger": [
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "triggerId": "1",
+        "name": "CE - generate_lead (todos los canales)",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "generate_lead" }
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "triggerId": "2",
+        "name": "CE - generate_lead (solo WhatsApp)",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "generate_lead" }
+            ]
+          }
+        ],
+        "filter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - method}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "whatsapp" }
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "triggerId": "3",
+        "name": "CE - faq_open",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "faq_open" }
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "triggerId": "4",
+        "name": "CE - begin_checkout (cotizador)",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "begin_checkout" }
+            ]
+          }
+        ]
+      }
+    ],
+    "tag": [
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "tagId": "1",
+        "name": "GA4 - Configuración (todas las páginas)",
+        "type": "gaawc",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "tagId",
+            "value": "{{Const - GA4 Measurement ID}}"
+          },
+          { "type": "BOOLEAN", "key": "sendPageView", "value": "true" }
+        ],
+        "firingTriggerId": ["2147479553"]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "tagId": "2",
+        "name": "GA4 - Evento generate_lead",
+        "type": "gaawe",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "measurementIdOverride",
+            "value": "{{Const - GA4 Measurement ID}}"
+          },
+          { "type": "TEMPLATE", "key": "eventName", "value": "generate_lead" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "method" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - method}}" }
+                ]
+              },
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "cta_location" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - cta_location}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["1"]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "tagId": "3",
+        "name": "GA4 - Evento faq_open",
+        "type": "gaawe",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "measurementIdOverride",
+            "value": "{{Const - GA4 Measurement ID}}"
+          },
+          { "type": "TEMPLATE", "key": "eventName", "value": "faq_open" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "name", "value": "question" },
+                  { "type": "TEMPLATE", "key": "value", "value": "{{DLV - question}}" }
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["3"]
+      },
+      {
+        "accountId": "6355702881",
+        "containerId": "252666254",
+        "tagId": "4",
+        "name": "GA4 - Evento begin_checkout (cotizador)",
+        "type": "gaawe",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "measurementIdOverride",
+            "value": "{{Const - GA4 Measurement ID}}"
+          },
+          { "type": "TEMPLATE", "key": "eventName", "value": "begin_checkout" }
+        ],
+        "firingTriggerId": ["4"]
+      }
+    ]
+  }
+}

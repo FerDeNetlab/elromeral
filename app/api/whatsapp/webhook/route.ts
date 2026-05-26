@@ -38,6 +38,7 @@ import {
   buildAskDateYearMessage,
   checkDateAvailability,
   extractDateFromText,
+  extractNameWithClaude,
   generateBotResponse,
 } from "@/lib/bot-engine"
 import {
@@ -302,7 +303,9 @@ async function runFunnel(
   if (stage === "collect_name") {
     const detailExt = detail as WaSourceDetail & { wa_name_retries?: number }
     const nameRetries = detailExt.wa_name_retries ?? 0
-    const extractedName = extractCleanName(userMessage)
+    const regexName = extractCleanName(userMessage)
+    // Si regex falla, intentar con Claude (más inteligente)
+    const extractedName = regexName ?? (await extractNameWithClaude(userMessage))
 
     if (!extractedName && nameRetries < 1) {
       // Primera vez que no podemos extraer el nombre → pedir de nuevo

@@ -192,6 +192,14 @@ export default function Step11({ data, onContinue, onChange }: Step11Props) {
                 Oficiamiento de la ceremonia
               </span>
             </li>
+            <li className="flex items-start gap-3 text-sm font-light">
+              <span
+                className={`w-1 h-1 rounded-full mt-2 flex-shrink-0 ${capillaSeleccionada === true ? "bg-background/60" : "bg-neutral-400"}`}
+              />
+              <span className={capillaSeleccionada === true ? "text-background/80" : "text-neutral-600"}>
+                Alfombra
+              </span>
+            </li>
           </ul>
 
           <div
