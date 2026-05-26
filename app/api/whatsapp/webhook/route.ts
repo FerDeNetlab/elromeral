@@ -38,7 +38,6 @@ import {
   buildAskDateYearMessage,
   checkDateAvailability,
   extractDateFromText,
-  extractNameWithClaude,
   generateBotResponse,
 } from "@/lib/bot-engine"
 import {
@@ -216,64 +215,10 @@ async function notifyAdvisor(lead: WaLeadData): Promise<void> {
 
 const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
-// ─── Extracción de nombre desde mensaje libre ─────────────────────────────────
-function extractCleanName(text: string): string | null {
-  let s = text.trim()
-
-  // 1. Quitar saludos (incluyendo variantes con "tardes/noches/días")
-  s = s.replace(
-    /^(buenas?\s*(tardes?|noches?|d[ií]as?)?[,!.]?\s*|buenos?\s*d[ií]as?[,!.]?\s*|hola[,!.]?\s*|hey[,!.]?\s*|hi[,!.]?\s*)+/gi,
-    "",
-  )
-
-  // 2. Quitar frases de presentación al inicio
-  s = s.replace(
-    /^(mi\s+nombre\s+es\s+|me\s+llamo\s+|soy\s+|les?\s+habla\s+|les?\s+escribe\s+|le\s+habla\s+)/gi,
-    "",
-  )
-
-  // 3. Quitar respuestas afirmativas como "Claro, soy X" / "Si, es X"
-  s = s.replace(
-    /^(claro[,!.]?\s*(?:es\s+|soy\s+)?|s[ií][,!.]?\s*(?:claro[,!.]?\s*)?(?:es\s+|soy\s+)?|con\s+gusto[,!.]?\s*(?:es\s+|soy\s+)?|por\s+supuesto[,!.]?\s*(?:es\s+|soy\s+)?|disculpa[,!.]?\s*(?:es\s+|soy\s+)?)/gi,
-    "",
-  )
-
-  // 4. "Mafer, mucho gusto" → tomar sólo lo que va antes de la coma si el resto es frase social
-  if (s.includes(",")) {
-    const [before, ...rest] = s.split(",")
-    const beforeTrimmed = before.trim()
-    const afterTrimmed = rest.join(",").trim()
-    if (
-      beforeTrimmed.split(/\s+/).length <= 3 &&
-      beforeTrimmed.length <= 30 &&
-      /^(mucho\s+gusto|con\s+gusto|encantad[oa]|un\s+placer|gusto\s+en)/i.test(afterTrimmed)
-    ) {
-      s = beforeTrimmed
-    }
-  }
-
-  // 5. Quitar frases sociales al final
-  s = s
-    .replace(/[,!.]?\s*(mucho\s+gusto|con\s+gusto|encantad[oa]|un\s+placer|buen\s+d[ií]a)\s*$/gi, "")
-    .trim()
-
-  // 6. Descartar si parece pregunta o solicitud (no es un nombre)
-  if (
-    /\?/.test(s) ||
-    /\b(podr[ií]as?|quisiera|quiero|necesito|me\s+(puede|gustar[ií]a|podr[ií]a)|informaci[oó]n|cotizaci[oó]n|disponibilidad|apoyar|ayudar|favor|servicios?|evento|boda|precio)\b/i.test(s) ||
-    s.length > 45 ||
-    s.split(/\s+/).length > 5
-  ) {
-    return null
-  }
-
-  // 7. Debe tener al menos 2 chars y empezar con letra
-  if (s.length < 2 || !/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ]/i.test(s)) return null
-
-  return s
-}
-
 // ─── Motor principal del funnel ───────────────────────────────────────────────
+// Arquitectura: fast paths determinísticos para inputs claros → Claude como
+// motor primario para collect_name y todos los casos ambiguos. Claude decide
+// next_stage y extrae datos estructurados; los datos se aplican completamente.
 async function runFunnel(
   lead: WaLeadData,
   userMessage: string,
@@ -284,57 +229,46 @@ async function runFunnel(
   const history: WaMessage[] = detail.wa_conversation_history ?? []
   const nombre = lead.nombres && !lead.nombres.startsWith("Lead WhatsApp") ? lead.nombres : null
 
-  // Etapas terminales: el bot guarda silencio para que el asesor humano tome el hilo
+  // ── Etapas terminales: bot silencioso ──
   if (["not_qualified", "calendly_sent", "advisor_notified", "needs_human", "completed"].includes(stage)) {
     return ""
   }
 
   // ── Bienvenida ──
   if (stage === "welcome") {
-    const welcomeText = buildWelcomeMessage()
+    const msg = buildWelcomeMessage()
     await updateLead(lead.id, {
-      source_detail: { ...detail, wa_stage: "collect_name", wa_conversation_history: appendToHistory(history, "assistant", welcomeText) } as WaSourceDetail,
-      wa_last_message_at: new Date().toISOString(),
-    })
-    return welcomeText
-  }
-
-  // ── COLLECT_NAME: extraer nombre de forma inteligente ──
-  if (stage === "collect_name") {
-    const detailExt = detail as WaSourceDetail & { wa_name_retries?: number }
-    const nameRetries = detailExt.wa_name_retries ?? 0
-    const regexName = extractCleanName(userMessage)
-    // Si regex falla, intentar con Claude (más inteligente)
-    const extractedName = regexName ?? (await extractNameWithClaude(userMessage))
-
-    if (!extractedName && nameRetries < 1) {
-      // Primera vez que no podemos extraer el nombre → pedir de nuevo
-      const askMsg = `Con mucho gusto te ayudo. 😊 ¿Me podrías compartir tu nombre?`
-      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askMsg)
-      await updateLead(lead.id, {
-        source_detail: { ...detail, wa_conversation_history: newHist, wa_name_retries: 1 } as unknown as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      })
-      return askMsg
-    }
-
-    // Usar nombre extraído, o nombre de perfil de WhatsApp como respaldo
-    const profileName = lead.nombres?.startsWith("Lead WhatsApp ")
-      ? lead.nombres.slice("Lead WhatsApp ".length).trim() || null
-      : null
-    const nombreDetectado = extractedName ?? profileName ?? "amigo"
-
-    const msg = buildAfterNameMessage(nombreDetectado)
-    const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
-    await updateLead(lead.id, {
-      nombres: nombreDetectado,
-      source_detail: { ...detail, wa_stage: "collect_event_type", wa_conversation_history: newHist } as WaSourceDetail,
+      source_detail: { ...detail, wa_stage: "collect_name", wa_conversation_history: appendToHistory(history, "assistant", msg) } as WaSourceDetail,
       wa_last_message_at: new Date().toISOString(),
     })
     return msg
   }
 
-  // ── COLLECT_EVENT_TYPE: parser determinístico ──
+  // ══════════════════════════════════════════════════════════════════════
+  // FAST PATHS — parsers determinísticos para inputs claros.
+  // Si el input es ambiguo, caen al motor Claude al final.
+  // ══════════════════════════════════════════════════════════════════════
+
+  // ── collect_schedule: siempre determinístico (cualquier respuesta → advisor) ──
+  if (stage === "collect_schedule") {
+    const trimmed = userMessage.trim()
+    const horario = trimmed === "1" ? "mañana (9:00 – 13:00)"
+      : trimmed === "2" ? "tarde (14:00 – 18:00)"
+      : trimmed === "3" ? "noche (18:00 – 20:00)"
+      : parseScheduleHint(userMessage) ?? trimmed
+    const msg = buildAdvisorNotifiedMessage(nombre)
+    const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+    await updateLead(lead.id, {
+      horario_preferido: horario,
+      etiqueta_wa: "advisor_notified",
+      source_detail: { ...detail, wa_stage: "advisor_notified", wa_conversation_history: newHist } as WaSourceDetail,
+      wa_last_message_at: new Date().toISOString(),
+    })
+    await notifyAdvisor(lead)
+    return msg
+  }
+
+  // ── collect_event_type ──
   if (stage === "collect_event_type") {
     const eventType = parseEventType(userMessage)
     if (eventType) {
@@ -352,28 +286,24 @@ async function runFunnel(
       if (isHuman) await notifyAdvisor({ ...lead, ...patch } as WaLeadData)
       return msg
     }
-    // No entendió → Claude
   }
 
-  // ── COLLECT_DATE_YN: parser determinístico ──
+  // ── collect_date_yn ──
   if (stage === "collect_date_yn") {
     const yn = parseYesNo(userMessage)
-    // Dieron la fecha directamente (ej: "el 15 de septiembre")
     if (yn !== false && detectDateHint(userMessage)) {
-      // Si la fecha no incluye año, pedirlo antes de extraer
       if (!dateTextHasYear(userMessage)) {
-        const askYearMsg = buildAskDateYearMessage(nombre, userMessage)
-        const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askYearMsg)
+        const msg = buildAskDateYearMessage(nombre, userMessage)
+        const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
         await updateLead(lead.id, {
           source_detail: { ...detail, wa_stage: "collect_date", wa_tiene_fecha: true, wa_fecha_texto: userMessage, wa_conversation_history: newHist } as WaSourceDetail,
           wa_last_message_at: new Date().toISOString(),
         })
-        return askYearMsg
+        return msg
       }
       const fechaISO = await extractDateFromText(userMessage)
       if (fechaISO) {
-        const searchMsg = buildSearchingDateMessage()
-        await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: searchMsg })
+        await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: buildSearchingDateMessage() })
         const available = await checkDateAvailability(fechaISO)
         const msg = buildAvailabilityMessage(nombre, available, fechaISO)
         const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
@@ -383,51 +313,41 @@ async function runFunnel(
         })
         return msg
       }
-      // Detectó hint pero no pudo extraer → pedir fecha explícita
-      const askMsg = buildCollectDateMessage(nombre)
-      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askMsg)
-      await updateLead(lead.id, {
-        source_detail: { ...detail, wa_stage: "collect_date", wa_tiene_fecha: true, wa_conversation_history: newHist } as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      })
-      return askMsg
     }
     if (yn === true) {
-      const askMsg = buildCollectDateMessage(nombre)
-      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askMsg)
+      const msg = buildCollectDateMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
         source_detail: { ...detail, wa_stage: "collect_date", wa_tiene_fecha: true, wa_conversation_history: newHist } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
       })
-      return askMsg
+      return msg
     }
     if (yn === false) {
-      const noDateMsg = buildNoDateMessage(nombre)
-      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", noDateMsg)
+      const msg = buildNoDateMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
         source_detail: { ...detail, wa_stage: "collect_guests", wa_tiene_fecha: false, wa_conversation_history: newHist } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
       })
-      return noDateMsg
+      return msg
     }
-    // Ambiguo → Claude
   }
 
-  // ── COLLECT_DATE: el usuario envía la fecha completa ──
+  // ── collect_date ──
   if (stage === "collect_date" && detectDateHint(userMessage)) {
     if (!dateTextHasYear(userMessage)) {
-      const askYearMsg = buildAskDateYearMessage(nombre, userMessage)
-      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", askYearMsg)
+      const msg = buildAskDateYearMessage(nombre, userMessage)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
         source_detail: { ...detail, wa_stage: "collect_date", wa_fecha_texto: userMessage, wa_conversation_history: newHist } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
       })
-      return askYearMsg
+      return msg
     }
     const fechaISO = await extractDateFromText(userMessage)
     if (fechaISO) {
-      const searchMsg = buildSearchingDateMessage()
-      await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: searchMsg })
+      await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: buildSearchingDateMessage() })
       const available = await checkDateAvailability(fechaISO)
       const msg = buildAvailabilityMessage(nombre, available, fechaISO)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
@@ -439,9 +359,91 @@ async function runFunnel(
     }
   }
 
-  // ── COLLECT_APPOINTMENT: op1=asesor, op2=Calendly ──
+  // ── collect_guests ──
+  if (stage === "collect_guests") {
+    const guestRange = parseGuestRangeFromText(userMessage)
+    if (guestRange) {
+      const emotionalMsg = buildGuestEmotionalMessage(nombre, guestRange)
+      const budgetMsg = buildBudgetOptionsMessage(nombre, guestRange)
+      const combined = `${emotionalMsg}\n\n${budgetMsg}`
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", combined)
+      await updateLead(lead.id, {
+        num_invitados: guestRangeToApprox(guestRange),
+        source_detail: { ...detail, wa_stage: "collect_budget", wa_rango_invitados: guestRange, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return combined
+    }
+  }
+
+  // ── collect_budget ──
+  if (stage === "collect_budget") {
+    const guestRange = detail.wa_rango_invitados ?? "150-200"
+    const isReconsider = detail.wa_reconsidero === true
+    let qualification = parseBudgetOption(userMessage)
+    if (isReconsider && qualification === "bajo") qualification = null
+    if (isReconsider) {
+      const t = userMessage.trim()
+      if (/^1$/.test(t)) qualification = "medio"
+      else if (/^2$/.test(t)) qualification = "alto"
+    }
+    if (!qualification) {
+      const amount = parseMXNAmount(userMessage)
+      if (amount) qualification = classifyBudget(amount, guestRange)
+      if (isReconsider && qualification === "bajo") qualification = null
+    }
+    if (qualification) {
+      if (qualification === "bajo") {
+        const msg = buildBudgetLowReconsiderMessage(nombre, guestRange)
+        const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+        await updateLead(lead.id, {
+          calificacion_lead: qualification,
+          source_detail: { ...detail, wa_stage: "budget_low_reconsider", wa_conversation_history: newHist } as WaSourceDetail,
+          wa_last_message_at: new Date().toISOString(),
+        })
+        return msg
+      } else {
+        const msg = buildBudgetQualifiedMessage(nombre)
+        const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+        await updateLead(lead.id, {
+          calificacion_lead: qualification,
+          source_detail: { ...detail, wa_stage: "collect_appointment", wa_conversation_history: newHist } as WaSourceDetail,
+          wa_last_message_at: new Date().toISOString(),
+        })
+        return msg
+      }
+    }
+  }
+
+  // ── budget_low_reconsider ──
+  if (stage === "budget_low_reconsider") {
+    const guestRange = detail.wa_rango_invitados ?? "150-200"
+    const answer = parseYesNo(userMessage)
+    const isYes = answer === true || /^1$|reconsider/.test(userMessage.toLowerCase().trim())
+    const isNo = answer === false || /^2$/.test(userMessage.trim())
+    if (isYes) {
+      const msg = buildBudgetReconsiderReturnMessage(nombre, guestRange)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, {
+        source_detail: { ...detail, wa_stage: "collect_budget", wa_reconsidero: true, wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return msg
+    }
+    if (isNo) {
+      const msg = buildBudgetLowCloseMessage(nombre)
+      const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, {
+        etiqueta_wa: "not_qualified",
+        source_detail: { ...detail, wa_stage: "not_qualified", wa_conversation_history: newHist } as WaSourceDetail,
+        wa_last_message_at: new Date().toISOString(),
+      })
+      return msg
+    }
+  }
+
+  // ── collect_appointment ──
   if (stage === "collect_appointment") {
-    // Opción 2 / Calendly / en línea
     if (parseCalendlyIntent(userMessage) || /^2$/.test(userMessage.trim())) {
       const msg = buildCalendlyMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
@@ -453,7 +455,6 @@ async function runFunnel(
       await notifyAdvisor(lead)
       return msg
     }
-    // Opción 1 / asesor contacta
     if (/^1$/.test(userMessage.trim()) || /asesor|contacten|contacte|llamen|llámenme|me\s*contacten|prefer[io]\s*(que|un)|me\s*avisan/.test(userMessage.toLowerCase())) {
       const msg = buildCollectScheduleMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
@@ -463,13 +464,12 @@ async function runFunnel(
       })
       return msg
     }
-    // Mencionaron horario directamente
-    const scheduleInApp = parseScheduleHint(userMessage)
-    if (scheduleInApp) {
+    const scheduleHint = parseScheduleHint(userMessage)
+    if (scheduleHint) {
       const msg = buildAdvisorNotifiedMessage(nombre)
       const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, {
-        horario_preferido: scheduleInApp,
+        horario_preferido: scheduleHint,
         etiqueta_wa: "advisor_notified",
         source_detail: { ...detail, wa_stage: "advisor_notified", wa_conversation_history: newHist } as WaSourceDetail,
         wa_last_message_at: new Date().toISOString(),
@@ -477,218 +477,181 @@ async function runFunnel(
       await notifyAdvisor(lead)
       return msg
     }
-    // Ambiguo → Claude
   }
 
-  // ── COLLECT_SCHEDULE: captura horario preferido → asesora ──
-  if (stage === "collect_schedule") {
-    const trimmed = userMessage.trim()
-    let horario: string
-    if (trimmed === "1") {
-      horario = "mañana (9:00 – 13:00)"
-    } else if (trimmed === "2") {
-      horario = "tarde (14:00 – 18:00)"
-    } else if (trimmed === "3") {
-      horario = "noche (18:00 – 20:00)"
-    } else {
-      horario = parseScheduleHint(userMessage) ?? trimmed
-    }
-    const msg = buildAdvisorNotifiedMessage(nombre)
+  // ── Desvío de preguntas de precio (universal) ──
+  if (/precio|paquete|costo|cu[áa]nto|renta|tarifa|cotiza|informes|m[áa]s\s+info|m[áa]s\s+informaci[oó]n/.test(userMessage.toLowerCase())) {
+    const msg = buildPriceDeflectMessage(nombre)
     const newHist = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
     await updateLead(lead.id, {
-      horario_preferido: horario,
-      etiqueta_wa: "advisor_notified",
-      source_detail: { ...detail, wa_stage: "advisor_notified", wa_conversation_history: newHist } as WaSourceDetail,
+      source_detail: { ...detail, wa_conversation_history: newHist } as WaSourceDetail,
       wa_last_message_at: new Date().toISOString(),
     })
-    await notifyAdvisor(lead)
     return msg
   }
 
-  // ── COLLECT_GUESTS: parser determinístico, sin depender de Claude ──
-  if (stage === "collect_guests") {
-    const guestRange = parseGuestRangeFromText(userMessage)
-    if (guestRange) {
-      // Mensaje emocional según el tamaño, luego muestra opciones de presupuesto
-      const emotionalMsg = buildGuestEmotionalMessage(nombre, guestRange)
-      const budgetMsg = buildBudgetOptionsMessage(nombre, guestRange)
-      const combined = `${emotionalMsg}\n\n${budgetMsg}`
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", combined)
-      await updateLead(lead.id, {
-        num_invitados: guestRangeToApprox(guestRange),
-        source_detail: { ...detail, wa_stage: "collect_budget", wa_rango_invitados: guestRange, wa_conversation_history: newHistory } as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      })
-      return combined
-    }
-    // No entendió → Claude pide aclaración
-    const clarify = await generateBotResponse(lead, userMessage, history)
-    const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", clarify.text)
-    await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
-    return clarify.text
-  }
+  // ══════════════════════════════════════════════════════════════════════
+  // MOTOR CLAUDE — Motor primario para collect_name y todos los casos
+  // que no resolvieron los fast paths. Aplica TODOS los campos extraídos.
+  // ══════════════════════════════════════════════════════════════════════
 
-  // ── COLLECT_BUDGET: parser determinístico ──
-  if (stage === "collect_budget") {
-    const guestRange = detail.wa_rango_invitados ?? "150-200"
-    const isReconsider = detail.wa_reconsidero === true
-
-    let qualification = parseBudgetOption(userMessage)
-    // Si está en modo reconsideración, remap: opción 1→medio, 2→alto (no hay opción bajo)
-    if (isReconsider && qualification === "bajo") {
-      qualification = null // no valid in reconsider mode, try numeric remap
-    }
-    if (isReconsider) {
-      const trimmed = userMessage.trim()
-      if (/^1$/.test(trimmed)) qualification = "medio"
-      else if (/^2$/.test(trimmed)) qualification = "alto"
-    }
-    if (!qualification) {
-      const amount = parseMXNAmount(userMessage)
-      if (amount) qualification = classifyBudget(amount, guestRange)
-      // En modo reconsiderar, si clasifica bajo, tratar como no entendido
-      if (isReconsider && qualification === "bajo") qualification = null
-    }
-
-    if (qualification) {
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", "→qualification")
-      const basePatch = {
-        calificacion_lead: qualification,
-        source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      }
-
-      if (qualification === "bajo") {
-        const reconsiderMsg = buildBudgetLowReconsiderMessage(nombre, guestRange)
-        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "budget_low_reconsider"
-        await updateLead(lead.id, basePatch)
-        return reconsiderMsg
-      } else {
-        const qualMsg = buildBudgetQualifiedMessage(nombre)
-        ;(basePatch.source_detail as WaSourceDetail).wa_stage = "collect_appointment"
-        await updateLead(lead.id, basePatch)
-        return qualMsg
-      }
-    }
-
-    // No entendió → Claude pide aclaración
-    const clarify = await generateBotResponse(lead, userMessage, history)
-    const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", clarify.text)
-    await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
-    return clarify.text
-  }
-
-  // ── BUDGET_LOW_RECONSIDER: ¿puede ajustar? ──
-  if (stage === "budget_low_reconsider") {
-    const guestRange = detail.wa_rango_invitados ?? "150-200"
-    const answer = parseYesNo(userMessage)
-    const isYes = answer === true || /^1$|reconsider/.test(userMessage.toLowerCase().trim())
-    const isNo = answer === false || /^2$/.test(userMessage.trim())
-    if (isYes) {
-      const msg = buildBudgetReconsiderReturnMessage(nombre, guestRange)
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
-      await updateLead(lead.id, {
-        source_detail: { ...detail, wa_stage: "collect_budget", wa_reconsidero: true, wa_conversation_history: newHistory } as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      })
-      return msg
-    }
-    if (isNo) {
-      const closeMsg = buildBudgetLowCloseMessage(nombre)
-      const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", closeMsg)
-      await updateLead(lead.id, {
-        etiqueta_wa: "not_qualified",
-        source_detail: { ...detail, wa_stage: "not_qualified", wa_conversation_history: newHistory } as WaSourceDetail,
-        wa_last_message_at: new Date().toISOString(),
-      })
-      return closeMsg
-    }
-    // Ambiguo → Claude
-  }
-
-  // ── Preguntas de precio/paquetes en cualquier etapa → desviar con copy exacto ──
-  if (/precio|paquete|costo|cuánto|cu[áa]nto|cu[áa]nto sale|renta|tarifa|cotiza|informes|más info|m[áa]s informaci[oó]n/.test(userMessage.toLowerCase())) {
-    const deflectMsg = buildPriceDeflectMessage(nombre)
-    const newHistory = appendToHistory(appendToHistory(history, "user", userMessage), "assistant", deflectMsg)
-    await updateLead(lead.id, { source_detail: { ...detail, wa_conversation_history: newHistory } as WaSourceDetail, wa_last_message_at: new Date().toISOString() })
-    return deflectMsg
-  }
-
-  // ── Para todas las demás etapas: Claude ──
   const response = await generateBotResponse(lead, userMessage, history)
   const ex = response.extracted
-  const newHistory = appendToHistory(
-    appendToHistory(history, "user", userMessage),
-    "assistant",
-    response.text,
-  )
+  const effectiveName = ex.nombre ?? nombre
 
-  let nextStage: WaStage = ex.next_stage ?? stage
+  // Patch base — se irá llenando con los campos extraídos
   const patch: Record<string, unknown> = {
-    source_detail: { ...detail, wa_stage: nextStage, wa_conversation_history: newHistory } as WaSourceDetail,
+    source_detail: { ...detail } as WaSourceDetail,
     wa_last_message_at: new Date().toISOString(),
   }
-
   if (ex.nombre) patch.nombres = ex.nombre
 
+  // — collect_name: Claude extrajo nombre → mensaje predefinido —
+  if (stage === "collect_name") {
+    const detectedName = ex.nombre ?? nombre ?? "amigo"
+    const msg = buildAfterNameMessage(detectedName)
+    patch.nombres = detectedName
+    ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_event_type"
+    ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+      appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+    await updateLead(lead.id, patch)
+    return msg
+  }
+
+  // — Tipo de evento (fallback Claude) —
   if (ex.tipo_evento) {
     patch.tipo_evento = ex.tipo_evento
     if (ex.tipo_evento === "corporativo" || ex.tipo_evento === "social") {
-      const humanMsg = buildNeedsHumanMessage(ex.nombre ?? nombre)
+      const msg = buildNeedsHumanMessage(effectiveName)
       patch.etiqueta_wa = "needs_human"
       ;(patch.source_detail as WaSourceDetail).wa_stage = "needs_human"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, patch)
       await notifyAdvisor({ ...lead, ...patch } as WaLeadData)
-      return humanMsg
+      return msg
     }
   }
 
+  // — Fecha (fallback Claude) —
   if (ex.tiene_fecha !== undefined) {
     ;(patch.source_detail as WaSourceDetail).wa_tiene_fecha = ex.tiene_fecha
   }
-
-  if (ex.fecha_texto && (stage === "collect_date" || stage === "collect_date_yn")) {
+  if (ex.fecha_texto) {
     ;(patch.source_detail as WaSourceDetail).wa_fecha_texto = ex.fecha_texto
-    // Si no trae año, preguntar antes de verificar disponibilidad
     if (!dateTextHasYear(ex.fecha_texto)) {
-      const askYearMsg = buildAskDateYearMessage(ex.nombre ?? nombre, ex.fecha_texto)
+      const msg = buildAskDateYearMessage(effectiveName, ex.fecha_texto)
       ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_date"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, patch)
-      return askYearMsg
+      return msg
     }
     const fechaISO = await extractDateFromText(ex.fecha_texto)
     if (fechaISO) {
-      const searchMsg = buildSearchingDateMessage()
-      await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: searchMsg })
+      await sendWhatsAppTextMessage({ accessToken: getEnv().accessToken, phoneNumberId: getEnv().phoneNumberId, to: phone, body: buildSearchingDateMessage() })
       const available = await checkDateAvailability(fechaISO)
+      const msg = buildAvailabilityMessage(effectiveName, available, fechaISO)
       ;(patch.source_detail as WaSourceDetail).wa_fecha_iso = fechaISO
       ;(patch.source_detail as WaSourceDetail).wa_disponible = available
-      nextStage = "collect_guests"
       ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_guests"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, patch)
-      return buildAvailabilityMessage(ex.nombre ?? nombre, available, fechaISO)
+      return msg
     }
   }
 
+  // — Invitados (fallback Claude para collect_guests) —
+  if (ex.rango_invitados && stage === "collect_guests") {
+    const emotionalMsg = buildGuestEmotionalMessage(effectiveName, ex.rango_invitados)
+    const budgetMsg = buildBudgetOptionsMessage(effectiveName, ex.rango_invitados)
+    const combined = `${emotionalMsg}\n\n${budgetMsg}`
+    patch.num_invitados = guestRangeToApprox(ex.rango_invitados)
+    ;(patch.source_detail as WaSourceDetail).wa_rango_invitados = ex.rango_invitados
+    ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_budget"
+    ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+      appendToHistory(appendToHistory(history, "user", userMessage), "assistant", combined)
+    await updateLead(lead.id, patch)
+    return combined
+  }
+
+  // — Presupuesto (fallback Claude para collect_budget) —
+  if (ex.budget_qualification && stage === "collect_budget") {
+    const guestRange = detail.wa_rango_invitados ?? "150-200"
+    patch.calificacion_lead = ex.budget_qualification
+    if (ex.budget_qualification === "bajo") {
+      const msg = buildBudgetLowReconsiderMessage(effectiveName, guestRange)
+      ;(patch.source_detail as WaSourceDetail).wa_stage = "budget_low_reconsider"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, patch)
+      return msg
+    } else {
+      const msg = buildBudgetQualifiedMessage(effectiveName)
+      ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_appointment"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, patch)
+      return msg
+    }
+  }
+
+  // — Reconsideración (fallback Claude para budget_low_reconsider) —
+  if (stage === "budget_low_reconsider" && ex.quiere_reconsiderar !== undefined) {
+    const guestRange = detail.wa_rango_invitados ?? "150-200"
+    if (ex.quiere_reconsiderar) {
+      const msg = buildBudgetReconsiderReturnMessage(effectiveName, guestRange)
+      ;(patch.source_detail as WaSourceDetail).wa_stage = "collect_budget"
+      ;(patch.source_detail as WaSourceDetail).wa_reconsidero = true
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, patch)
+      return msg
+    } else {
+      const msg = buildBudgetLowCloseMessage(effectiveName)
+      patch.etiqueta_wa = "not_qualified"
+      ;(patch.source_detail as WaSourceDetail).wa_stage = "not_qualified"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
+      await updateLead(lead.id, patch)
+      return msg
+    }
+  }
+
+  // — Cita (fallback Claude para collect_appointment) —
   if (stage === "collect_appointment") {
     if (ex.quiere_calendly) {
+      const msg = buildCalendlyMessage(effectiveName)
       patch.etiqueta_wa = "calendly_sent"
-      patch.calificacion_lead = lead.calificacion_lead ?? ex.budget_qualification
       ;(patch.source_detail as WaSourceDetail).wa_stage = "calendly_sent"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, patch)
       await notifyAdvisor({ ...lead, ...patch } as WaLeadData)
-      return buildCalendlyMessage(ex.nombre ?? nombre)
-    } else if (nextStage === "advisor_notified" || ex.horario_preferido) {
+      return msg
+    }
+    if (ex.next_stage === "advisor_notified" || ex.horario_preferido) {
+      const msg = buildAdvisorNotifiedMessage(effectiveName)
       patch.etiqueta_wa = "advisor_notified"
       if (ex.horario_preferido) patch.horario_preferido = ex.horario_preferido
       ;(patch.source_detail as WaSourceDetail).wa_stage = "advisor_notified"
+      ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+        appendToHistory(appendToHistory(history, "user", userMessage), "assistant", msg)
       await updateLead(lead.id, patch)
       await notifyAdvisor({ ...lead, ...patch } as WaLeadData)
-      return buildAdvisorNotifiedMessage(ex.nombre ?? nombre)
+      return msg
     }
   }
 
+  // — Horario si Claude lo extrajo en otras etapas —
+  if (ex.horario_preferido) patch.horario_preferido = ex.horario_preferido
+
+  // — Default: aplicar next_stage de Claude y devolver su texto —
+  const nextStage: WaStage = ex.next_stage ?? stage
   ;(patch.source_detail as WaSourceDetail).wa_stage = nextStage
+  ;(patch.source_detail as WaSourceDetail).wa_conversation_history =
+    appendToHistory(appendToHistory(history, "user", userMessage), "assistant", response.text)
   await updateLead(lead.id, patch)
   return response.text
 }

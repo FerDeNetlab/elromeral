@@ -328,37 +328,6 @@ export async function generateBotResponse(
   }
 }
 
-// ─── Extracción inteligente de nombre con Claude ─────────────────────────────
-
-export async function extractNameWithClaude(message: string): Promise<string | null> {
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 50,
-      messages: [
-        {
-          role: "user",
-          content: `Extrae únicamente el nombre propio de la persona del siguiente mensaje de WhatsApp. 
-Reglas:
-- Devuelve SOLO el nombre (ej: "Ruby", "Ana García", "Carlos")
-- Si el mensaje no contiene un nombre, responde exactamente: null
-- No devuelvas saludos, explicaciones ni texto adicional
-- Si hay múltiples nombres, devuelve el que claramente es quien escribe
-
-Mensaje: "${message}"`,
-        },
-      ],
-    })
-    const text = response.content[0].type === "text" ? response.content[0].text.trim() : ""
-    if (!text || text.toLowerCase() === "null") return null
-    // Sanity check: max 5 palabras, no debe ser una oración larga
-    if (text.split(/\s+/).length > 5 || text.length > 50) return null
-    return text
-  } catch {
-    return null
-  }
-}
-
 // ─── Mensajes del funnel — copys exactos del script ─────────────────────────
 
 export function buildWelcomeMessage(): string {
