@@ -19,7 +19,7 @@ export type WaStage =
   | "completed"            // flujo terminado
 
 export type EventType = "boda" | "xv_anos" | "bautizo" | "corporativo" | "social"
-export type GuestRange = "50-100" | "100-150" | "150-200" | "200-250" | "250-300" | "300-350"
+export type GuestRange = "50-100" | "100-150" | "150-200" | "200-250" | "250-300" | "300-350" | "350-400"
 export type BudgetQualification = "bajo" | "medio" | "alto"
 
 // ─── Datos del lead capturados por el bot ───────────────────────────────────
@@ -69,21 +69,23 @@ export interface IncomingWhatsAppMessage {
 
 // ─── Tabla de rangos de inversión por invitados ─────────────────────────────
 export const BUDGET_RANGES: Record<GuestRange, { bajo: string; medio: string; alto: string; minMedio: string }> = {
-  "50-100":  { bajo: "menos de $280,000 MXN",      medio: "$280,000 – $450,000 MXN",  alto: "más de $450,000 MXN",  minMedio: "$280,000" },
-  "100-150": { bajo: "menos de $370,000 MXN",      medio: "$370,000 – $650,000 MXN",  alto: "más de $650,000 MXN",  minMedio: "$370,000" },
-  "150-200": { bajo: "menos de $460,000 MXN",      medio: "$460,000 – $750,000 MXN",  alto: "más de $750,000 MXN",  minMedio: "$460,000" },
-  "200-250": { bajo: "menos de $550,000 MXN",      medio: "$550,000 – $800,000 MXN",  alto: "más de $800,000 MXN",  minMedio: "$550,000" },
-  "250-300": { bajo: "menos de $700,000 MXN",      medio: "$700,000 – $900,000 MXN",  alto: "más de $900,000 MXN",  minMedio: "$700,000" },
-  "300-350": { bajo: "menos de $850,000 MXN",      medio: "no disponible",             alto: "más de $850,000 MXN",  minMedio: "$850,000" },
+  "50-100":  { bajo: "menos de $290,000 MXN",      medio: "$291,000 – $500,000 MXN",    alto: "más de $501,000 MXN",    minMedio: "$291,000" },
+  "100-150": { bajo: "menos de $390,000 MXN",      medio: "$391,000 – $680,000 MXN",    alto: "más de $681,000 MXN",    minMedio: "$391,000" },
+  "150-200": { bajo: "menos de $480,000 MXN",      medio: "$481,000 – $890,000 MXN",    alto: "más de $891,000 MXN",    minMedio: "$481,000" },
+  "200-250": { bajo: "menos de $570,000 MXN",      medio: "$571,000 – $910,000 MXN",    alto: "más de $911,000 MXN",    minMedio: "$571,000" },
+  "250-300": { bajo: "menos de $700,000 MXN",      medio: "$701,000 – $950,000 MXN",    alto: "más de $951,000 MXN",    minMedio: "$701,000" },
+  "300-350": { bajo: "menos de $830,000 MXN",      medio: "$831,000 – $1,300,000 MXN",  alto: "más de $1,301,000 MXN",  minMedio: "$831,000" },
+  "350-400": { bajo: "menos de $925,000 MXN",      medio: "$926,000 – $1,400,000 MXN",  alto: "más de $1,401,000 MXN",  minMedio: "$926,000" },
 }
 
 export const GUEST_RANGE_LABELS: Record<GuestRange, string> = {
-  "50-100":  "1️⃣ 50 – 100",
-  "100-150": "2️⃣ 101 – 150",
-  "150-200": "3️⃣ 151 – 200",
-  "200-250": "4️⃣ 201 – 250",
-  "250-300": "5️⃣ 251 – 300",
-  "300-350": "6️⃣ 300 – 350",
+  "50-100":  "1️⃣ 50 – 99",
+  "100-150": "2️⃣ 100 – 149",
+  "150-200": "3️⃣ 150 – 199",
+  "200-250": "4️⃣ 200 – 249",
+  "250-300": "5️⃣ 250 – 299",
+  "300-350": "6️⃣ 300 – 349",
+  "350-400": "7️⃣ 350 – 399",
 }
 
 export const CALENDLY_URL = "https://cal.com/ricardo-heredia-jxuu3m/presencial?overlayCalendar=true"
@@ -124,7 +126,7 @@ export function parseGuestRange(text: string): GuestRange | null {
 export function guestRangeToApprox(range: GuestRange): number {
   const map: Record<GuestRange, number> = {
     "50-100": 75, "100-150": 125, "150-200": 175,
-    "200-250": 225, "250-300": 275, "300-350": 325,
+    "200-250": 225, "250-300": 275, "300-350": 325, "350-400": 375,
   }
   return map[range]
 }

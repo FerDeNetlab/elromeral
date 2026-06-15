@@ -81,20 +81,22 @@ ETAPA: collect_date
 
 ETAPA: collect_guests (CRÍTICO)
 → Pregunta cuántos invitados aproximadamente. Muestra las opciones numeradas:
-  1️⃣ 50 – 100
-  2️⃣ 101 – 150
-  3️⃣ 151 – 200
-  4️⃣ 201 – 250
-  5️⃣ 251 – 300
-  6️⃣ 301 – 350
+  1️⃣ 50 – 99
+  2️⃣ 100 – 149
+  3️⃣ 150 – 199
+  4️⃣ 200 – 249
+  5️⃣ 250 – 299
+  6️⃣ 300 – 349
+  7️⃣ 350 – 399
 → Si el usuario manda un NÚMERO SUELTO (ej: "100", "150", "200", "250"):
   - ≤100 → rango "50-100"
   - ≤150 → rango "100-150"
   - ≤200 → rango "150-200"
   - ≤250 → rango "200-250"
   - ≤300 → rango "250-300"
-  - >300 → rango "300-350"
-→ Si manda un número del 1 al 6, es la opción de la lista (1→"50-100", 2→"100-150", etc.)
+  - ≤350 → rango "300-350"
+  - >350 → rango "350-400"
+→ Si manda un número del 1 al 7, es la opción de la lista (1→"50-100", 2→"100-150", etc.)
 → NUNCA repitas la pregunta si ya dieron algún número o rango. Avanza siempre.
 
 ETAPA: collect_budget
@@ -137,14 +139,15 @@ ETAPA: needs_human
 ═══════════════════════════════════════
 TABLA DE INVERSIÓN (solo cuando sea relevante)
 ═══════════════════════════════════════
-| Invitados  | Bajo           | Medio           | Alto       |
-|------------|----------------|-----------------|------------|
-| 50–100     | < $280,000     | $280k–$450k     | > $450k    |
-| 100–150    | < $370,000     | $370k–$650k     | > $650k    |
-| 150–200    | < $460,000     | $460k–$750k     | > $750k    |
-| 200–250    | < $550,000     | $550k–$800k     | > $800k    |
-| 250–300    | < $700,000     | $700k–$900k     | > $900k    |
-| 300–350    | < $850,000     | —               | > $850k    |
+| Invitados  | Bajo           | Medio                | Alto             |
+|------------|----------------|----------------------|------------------|
+| 50–99      | < $290,000     | $291k–$500k          | > $501k          |
+| 100–149    | < $390,000     | $391k–$680k          | > $681k          |
+| 150–199    | < $480,000     | $481k–$890k          | > $891k          |
+| 200–249    | < $570,000     | $571k–$910k          | > $911k          |
+| 250–299    | < $700,000     | $701k–$950k          | > $951k          |
+| 300–349    | < $830,000     | $831k–$1,300,000     | > $1,301,000     |
+| 350–399    | < $925,000     | $926k–$1,400,000     | > $1,401,000     |
 Siempre redirige: "el desglose exacto lo armamos juntos en la cita".
 
 ═══════════════════════════════════════
@@ -275,8 +278,8 @@ export async function generateBotResponse(
             fecha_texto: { type: "string", description: "Fecha tal como la escribió el usuario." },
             rango_invitados: {
               type: "string",
-              enum: ["50-100", "100-150", "150-200", "200-250", "250-300", "300-350"],
-              description: "Rango de invitados. Si el usuario mandó un número suelto (ej: '100'), mapea al rango: ≤100→'50-100', ≤150→'100-150', ≤200→'150-200', ≤250→'200-250', ≤300→'250-300', >300→'300-350'. Si eligió opción numerada de una lista (1-6), mapearlo en orden.",
+              enum: ["50-100", "100-150", "150-200", "200-250", "250-300", "300-350", "350-400"],
+              description: "Rango de invitados. Si el usuario mandó un número suelto (ej: '100'), mapea al rango: ≤100→'50-100', ≤150→'100-150', ≤200→'150-200', ≤250→'200-250', ≤300→'250-300', ≤350→'300-350', >350→'350-400'. Si eligió opción numerada de una lista (1-7), mapearlo en orden.",
             },
             budget_qualification: {
               type: "string",
@@ -354,12 +357,12 @@ export function buildAskDateYearMessage(nombre: string | null, dateHint: string)
 
 export function buildNoDateMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
-  return `No te preocupes${n} 🤍\n\nMuchas celebraciones extraordinarias comienzan definiendo primero la visión, la experiencia y todo lo que desean vivir ese día.\n\n👉 Cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
+  return `No te preocupes${n} 🤍\n\nMuchas celebraciones extraordinarias comienzan definiendo primero la visión, la experiencia y todo lo que desean vivir ese día.\n\n👉 Cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 99\n2️⃣ 100 – 149\n3️⃣ 150 – 199\n4️⃣ 200 – 249\n5️⃣ 250 – 299\n6️⃣ 300 – 349\n7️⃣ 350 – 399`
 }
 
 export function buildCollectGuestsMessage(nombre: string | null): string {
   const n = nombre ? `, ${nombre}` : ""
-  return `Cuéntanos${n}, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
+  return `Cuéntanos${n}, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 99\n2️⃣ 100 – 149\n3️⃣ 150 – 199\n4️⃣ 200 – 249\n5️⃣ 250 – 299\n6️⃣ 300 – 349\n7️⃣ 350 – 399`
 }
 
 export function buildSearchingDateMessage(): string {
@@ -368,7 +371,7 @@ export function buildSearchingDateMessage(): string {
 
 export function buildAvailabilityMessage(nombre: string | null, available: boolean, _fecha: string): string {
   const n = nombre ? `, ${nombre}` : ""
-  const lista = `\n\n👉 Ahora cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 100\n2️⃣ 101 – 150\n3️⃣ 151 – 200\n4️⃣ 201 – 250\n5️⃣ 251 – 300\n6️⃣ 301 – 350`
+  const lista = `\n\n👉 Ahora cuéntanos, ¿aproximadamente cuántos invitados contemplas?\n\n1️⃣ 50 – 99\n2️⃣ 100 – 149\n3️⃣ 150 – 199\n4️⃣ 200 – 249\n5️⃣ 250 – 299\n6️⃣ 300 – 349\n7️⃣ 350 – 399`
   if (available) {
     return `✨ ¡Buenas noticias${n}! Tenemos disponibilidad para esa fecha. ¡Es tuya si la quieres!${lista}`
   }
@@ -383,6 +386,7 @@ export function buildGuestEmotionalMessage(_nombre: string | null, range: GuestR
     "200-250": `💫 Un evento memorable para compartir en grande, donde cada espacio cobra vida.`,
     "250-300": `🤍 Una celebración donde nadie importante se queda fuera y todos pueden vivirla juntos.`,
     "300-350": `✨ Un gran momento para reunir a todos los que forman parte de su historia y disfrutarlo en grande.`,
+    "350-400": `🎊 Una celebración a lo grande, donde la energía de todos juntos hace que el momento sea verdaderamente único.`,
   }
   return messages[range]
 }

@@ -15,10 +15,10 @@ import { BUDGET_RANGES } from "@/lib/whatsapp"
 export function parseGuestRangeFromText(text: string): GuestRange | null {
   const clean = text.toLowerCase().trim().replace(/[,._]/g, "")
 
-  // Opción numerada pura (1-6) o con contexto: "opción 2", "el 3", "número 4"
-  const optMatch = clean.match(/(?:opci[oó]n\s*|n[uú]mero\s*|el\s*)?([1-6])(?:\s|$|[^\d])/)
+  // Opción numerada pura (1-7) o con contexto: "opción 2", "el 3", "número 4"
+  const optMatch = clean.match(/(?:opci[oó]n\s*|n[uú]mero\s*|el\s*)?([1-7])(?:\s|$|[^\d])/)
   if (optMatch && clean.replace(/\D/g, "").length === 1) {
-    const options: GuestRange[] = ["50-100", "100-150", "150-200", "200-250", "250-300", "300-350"]
+    const options: GuestRange[] = ["50-100", "100-150", "150-200", "200-250", "250-300", "300-350", "350-400"]
     return options[parseInt(optMatch[1]) - 1]
   }
 
@@ -30,6 +30,7 @@ export function parseGuestRangeFromText(text: string): GuestRange | null {
     [/\b200\b.{0,10}\b250\b/, "200-250"],
     [/\b250\b.{0,10}\b300\b/, "250-300"],
     [/\b300\b.{0,10}\b350\b/, "300-350"],
+    [/\b350\b.{0,10}\b400\b/, "350-400"],
   ]
   for (const [re, range] of rangePatterns) {
     if (re.test(clean)) return range
@@ -39,8 +40,8 @@ export function parseGuestRangeFromText(text: string): GuestRange | null {
   const numMatch = clean.match(/\b(\d{2,3})\b/)
   if (numMatch) {
     const n = parseInt(numMatch[1])
-    if (n >= 1 && n <= 6) {
-      const options: GuestRange[] = ["50-100", "100-150", "150-200", "200-250", "250-300", "300-350"]
+    if (n >= 1 && n <= 7) {
+      const options: GuestRange[] = ["50-100", "100-150", "150-200", "200-250", "250-300", "300-350", "350-400"]
       return options[n - 1]
     }
     if (n <= 100) return "50-100"
@@ -48,7 +49,8 @@ export function parseGuestRangeFromText(text: string): GuestRange | null {
     if (n <= 200) return "150-200"
     if (n <= 250) return "200-250"
     if (n <= 300) return "250-300"
-    return "300-350"
+    if (n <= 350) return "300-350"
+    return "350-400"
   }
 
   return null
@@ -97,12 +99,13 @@ export function parseMXNAmount(text: string): number | null {
  */
 export function classifyBudget(amount: number, guestRange: GuestRange): BudgetQualification {
   const thresholds: Record<GuestRange, [number, number]> = {
-    "50-100":  [280_000, 450_000],
-    "100-150": [370_000, 650_000],
-    "150-200": [460_000, 750_000],
-    "200-250": [550_000, 800_000],
-    "250-300": [700_000, 900_000],
-    "300-350": [850_000, 850_000],
+    "50-100":  [290_000, 500_000],
+    "100-150": [390_000, 680_000],
+    "150-200": [480_000, 890_000],
+    "200-250": [570_000, 910_000],
+    "250-300": [700_000, 950_000],
+    "300-350": [830_000, 1_300_000],
+    "350-400": [925_000, 1_400_000],
   }
   const [low, high] = thresholds[guestRange]
   if (amount < low) return "bajo"
